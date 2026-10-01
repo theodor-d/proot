@@ -1,35 +1,75 @@
-<div style="border:2px solid #ff4655; border-radius:12px; padding:16px; background:#0f1923; text-align:center; color:#fff; font-family:'Segoe UI', sans-serif;">
-  <div style="display:inline-block; border:1px solid #ff4655; color:#ff4655; border-radius:6px; padding:2px 10px; font-size:12px; font-weight:bold; letter-spacing:1px;">VALORANT • AIM LAB RANGE</div>
-  <h2 style="color:#ff4655; margin:10px 0 4px; border:none; text-transform:uppercase; letter-spacing:1px;">Valorant Aim Trainer 3D</h2>
-  <p style="color:#ece8e1; margin:0 0 10px; font-size:12px;">เลื่อนเมาส์เพื่อเล็ง | คลิกซ้าย: ยิง | คลิกขวา: ADS (เล็ง) | ปุ่ม 1, 2, 3: เปลี่ยนปืน | R: รีโหลด</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Valorant Aim Trainer</title>
+  <style>
+    body { margin: 0; background: #0f1923; text-align: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; user-select: none; }
+    #hud { position: absolute; top: 16px; left: 0; width: 100%; color: #ece8e1; font-size: 15px; font-weight: 700; pointer-events: none; z-index: 10; display: flex; justify-content: space-around; text-shadow: 0 0 6px #000; }
+    #dmgText { position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); color: #00f0ff; font-weight: bold; font-size: 24px; pointer-events: none; z-index: 12; opacity: 0; transition: opacity 0.2s; }
+    #crosshair { position: absolute; top: 50%; left: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; pointer-events: none; z-index: 11; }
+    #adsOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 2px solid rgba(0,240,255,0.4); box-sizing: border-box; pointer-events: none; z-index: 9; opacity: 0; transition: opacity 0.15s; }
+    #msg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; color: #fff; font-size: 20px; font-weight: bold; cursor: pointer; background: rgba(15,25,35,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; }
+    canvas { width: 100vw; height: 100vh; display: block; }
+
+    /* Gun Shop Modal */
+    #shop { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 25, 35, 0.95); z-index: 30; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; color: #ece8e1; }
+    #shop h1 { color: #ff4655; margin: 0 0 5px 0; font-size: 28px; text-transform: uppercase; letter-spacing: 2px; }
+    #shop p { margin: 0 0 15px 0; font-size: 13px; color: #a0aab2; }
+    .shop-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; width: 95%; max-width: 1100px; max-height: 80vh; overflow-y: auto; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid #2b3e50; }
+    .category-title { grid-column: span 6; text-align: left; color: #ffb703; font-size: 14px; font-weight: bold; margin-top: 10px; padding-bottom: 4px; border-bottom: 1px solid #ffb703; text-transform: uppercase; }
+    .gun-card { background: #172431; border: 1px solid #2b3e50; border-radius: 6px; padding: 10px; cursor: pointer; transition: all 0.15s ease; text-align: left; }
+    .gun-card:hover { border-color: #ff4655; background: #1f3042; transform: translateY(-2px); }
+    .gun-card.active { border-color: #00f0ff; background: #1a3848; }
+    .gun-name { color: #fff; font-weight: bold; font-size: 14px; margin-bottom: 4px; }
+    .gun-stat { font-size: 11px; color: #8b9bb4; line-height: 1.3; }
+    .gun-stat span { color: #00f0ff; }
+  </style>
+</head>
+<body>
+  <div id="hud">
+    <div>WEAPON: <span id="wName" style="color:#ff4655;">VANDAL</span></div>
+    <div>AMMO: <span id="ammo" style="color:#00f0ff;">25</span>/<span id="maxAmmo">25</span></div>
+    <div>SCORE: <span id="score" style="color:#ffb703;">0</span></div>
+    <div style="font-size: 12px; color: #8b9bb4;">[B] Shop | [K] Lock/Unlock Mouse | [R] Reload</div>
+  </div>
+
+  <div id="dmgText">HEADSHOT 160</div>
+
+  <div id="crosshair">
+    <div style="position:absolute; top:6px; left:0; width:4px; height:2px; background:#00ffcc;"></div>
+    <div style="position:absolute; top:6px; right:0; width:4px; height:2px; background:#00ffcc;"></div>
+    <div style="position:absolute; top:0; left:6px; width:2px; height:4px; background:#00ffcc;"></div>
+    <div style="position:absolute; bottom:0; left:6px; width:2px; height:4px; background:#00ffcc;"></div>
+  </div>
+
+  <div id="adsOverlay">
+    <div style="position:absolute; top:50%; left:0; width:100%; height:1px; background:rgba(0,240,255,0.2);"></div>
+    <div style="position:absolute; left:50%; top:0; width:1px; height:100%; background:rgba(0,240,255,0.2);"></div>
+  </div>
+
+  <div id="msg">
+    <div>CLICK OR PRESS [K] TO LOCK MOUSE & PLAY</div>
+    <div style="font-size:14px; color:#8b9bb4; margin-top:8px;">Press [B] in-game to buy weapons | Press [K] to toggle mouse lock</div>
+  </div>
+
+  <!-- Buy Menu -->
+  <div id="shop">
+    <h1>VALORANT ARSENAL</h1>
+    <p>Click a weapon to equip | Press [B] or [ESC] to close</p>
+    <div class="shop-grid" id="shopGrid"></div>
+  </div>
   
-  <iframe srcdoc="<body style='margin:0; background:#0f1923; text-align:center; font-family:sans-serif; overflow:hidden; user-select:none;'>
-  <div id='hud' style='position:absolute; top:12px; left:0; width:100%; color:#ece8e1; font-size:13px; font-weight:700; pointer-events:none; z-index:10; display:flex; justify-content:space-around; text-shadow:0 0 4px #000;'>
-    <div>WEAPON: <span id='wName' style='color:#ff4655;'>VANDAL</span></div>
-    <div>AMMO: <span id='ammo' style='color:#00f0ff;'>25</span>/<span id='maxAmmo'>25</span></div>
-    <div>SCORE: <span id='score' style='color:#ffb703;'>0</span></div>
-  </div>
+  <canvas id="c"></canvas>
 
-  <div id='dmgText' style='position:absolute; top:35%; left:50%; transform:translate(-50%, -50%); color:#00f0ff; font-weight:bold; font-size:22px; pointer-events:none; z-index:12; opacity:0; transition:opacity 0.2s;'>HEADSHOT 160</div>
-
-  <div id='crosshair' style='position:absolute; top:50%; left:50%; width:12px; height:12px; margin:-6px 0 0 -6px; pointer-events:none; z-index:11;'>
-    <div style='position:absolute; top:5px; left:0; width:4px; height:2px; background:#00ffcc;'></div>
-    <div style='position:absolute; top:5px; right:0; width:4px; height:2px; background:#00ffcc;'></div>
-    <div style='position:absolute; top:0; left:5px; width:2px; height:4px; background:#00ffcc;'></div>
-    <div style='position:absolute; bottom:0; left:5px; width:2px; height:4px; background:#00ffcc;'></div>
-  </div>
-
-  <div id='adsOverlay' style='position:absolute; top:0; left:0; width:100%; height:100%; border:2px solid rgba(0,240,255,0.4); box-sizing:border-box; pointer-events:none; z-index:9; opacity:0; transition:opacity 0.15s;'>
-    <div style='position:absolute; top:50%; left:0; width:100%; height:1px; background:rgba(0,240,255,0.2);'></div>
-    <div style='position:absolute; left:50%; top:0; width:1px; height:100%; background:rgba(0,240,255,0.2);'></div>
-  </div>
-
-  <canvas id='c' style='width:100%; height:100%; display:block; cursor:none;'></canvas>
-
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
   (function() {
     var canvas = document.getElementById('c');
+    var msg = document.getElementById('msg');
+    var shop = document.getElementById('shop');
+    var shopGrid = document.getElementById('shopGrid');
     var wNameEl = document.getElementById('wName');
     var ammoEl = document.getElementById('ammo');
     var maxAmmoEl = document.getElementById('maxAmmo');
@@ -37,49 +77,136 @@
     var dmgText = document.getElementById('dmgText');
     var adsOverlay = document.getElementById('adsOverlay');
 
+    // Complete Valorant Weapon Roster
     var WEAPONS = {
-      1: { name: 'VANDAL', mag: 25, fireRate: 9.75, headDmg: 160, bodyDmg: 40, hasADS: true, zoom: 1.25, color: 0xff4655, modelLen: 0.8 },
-      2: { name: 'PHANTOM', mag: 30, fireRate: 11.0, headDmg: 156, bodyDmg: 39, hasADS: true, zoom: 1.25, color: 0x00f0ff, modelLen: 0.75 },
-      3: { name: 'SHERIFF', mag: 6, fireRate: 4.0, headDmg: 159, bodyDmg: 55, hasADS: false, zoom: 1.0, color: 0xffb703, modelLen: 0.5 }
+      // Sidearms
+      'classic': { name: 'CLASSIC', cat: 'Sidearm', mag: 12, fireRate: 6.75, headDmg: 78, bodyDmg: 26, hasADS: false, zoom: 1.0, color: 0x888888, modelLen: 0.4 },
+      'shorty':  { name: 'SHORTY', cat: 'Sidearm', mag: 2, fireRate: 3.3, headDmg: 22, bodyDmg: 11, hasADS: false, zoom: 1.0, color: 0x666666, modelLen: 0.35 },
+      'frenzy':  { name: 'FRENZY', cat: 'Sidearm', mag: 13, fireRate: 10.0, headDmg: 78, bodyDmg: 26, hasADS: false, zoom: 1.0, color: 0x555555, modelLen: 0.4 },
+      'ghost':   { name: 'GHOST', cat: 'Sidearm', mag: 15, fireRate: 6.75, headDmg: 105, bodyDmg: 30, hasADS: false, zoom: 1.0, color: 0x777777, modelLen: 0.45 },
+      'sheriff': { name: 'SHERIFF', cat: 'Sidearm', mag: 6, fireRate: 4.0, headDmg: 159, bodyDmg: 55, hasADS: false, zoom: 1.0, color: 0xffb703, modelLen: 0.5 },
+
+      // SMGs
+      'stinger': { name: 'STINGER', cat: 'SMG', mag: 20, fireRate: 16.0, headDmg: 67, bodyDmg: 27, hasADS: true, zoom: 1.15, color: 0x00b4d8, modelLen: 0.55 },
+      'spectre': { name: 'SPECTRE', cat: 'SMG', mag: 30, fireRate: 13.3, headDmg: 78, bodyDmg: 26, hasADS: true, zoom: 1.15, color: 0x0077b6, modelLen: 0.6 },
+
+      // Shotguns
+      'bucky':   { name: 'BUCKY', cat: 'Shotgun', mag: 5, fireRate: 1.1, headDmg: 44, bodyDmg: 22, hasADS: false, zoom: 1.0, color: 0x9d4edd, modelLen: 0.7 },
+      'judge':   { name: 'JUDGE', cat: 'Shotgun', mag: 7, fireRate: 3.5, headDmg: 34, bodyDmg: 17, hasADS: false, zoom: 1.0, color: 0x7209b7, modelLen: 0.7 },
+
+      // Rifles
+      'bulldog': { name: 'BULLDOG', cat: 'Rifle', mag: 24, fireRate: 10.0, headDmg: 115, bodyDmg: 35, hasADS: true, zoom: 1.25, color: 0x2a9d8f, modelLen: 0.7 },
+      'guardian':{ name: 'GUARDIAN', cat: 'Rifle', mag: 12, fireRate: 5.25, headDmg: 195, bodyDmg: 65, hasADS: true, zoom: 1.5, color: 0xe9c46a, modelLen: 0.8 },
+      'phantom': { name: 'PHANTOM', cat: 'Rifle', mag: 30, fireRate: 11.0, headDmg: 156, bodyDmg: 39, hasADS: true, zoom: 1.25, color: 0x00f0ff, modelLen: 0.75 },
+      'vandal':  { name: 'VANDAL', cat: 'Rifle', mag: 25, fireRate: 9.75, headDmg: 160, bodyDmg: 40, hasADS: true, zoom: 1.25, color: 0xff4655, modelLen: 0.8 },
+
+      // Sniper
+      'marshal': { name: 'MARSHAL', cat: 'Sniper', mag: 5, fireRate: 1.5, headDmg: 202, bodyDmg: 101, hasADS: true, zoom: 2.5, color: 0xf4a261, modelLen: 0.85 },
+      'outlaw':  { name: 'OUTLAW', cat: 'Sniper', mag: 2, fireRate: 2.75, headDmg: 238, bodyDmg: 140, hasADS: true, zoom: 2.5, color: 0xe76f51, modelLen: 0.85 },
+      'operator':{ name: 'OPERATOR', cat: 'Sniper', mag: 5, fireRate: 0.6, headDmg: 255, bodyDmg: 150, hasADS: true, zoom: 2.5, color: 0xd62828, modelLen: 0.9 },
+
+      // Heavy
+      'ares':    { name: 'ARES', cat: 'Heavy', mag: 50, fireRate: 13.0, headDmg: 72, bodyDmg: 30, hasADS: true, zoom: 1.25, color: 0x48cae4, modelLen: 0.85 },
+      'odin':    { name: 'ODIN', cat: 'Heavy', mag: 100, fireRate: 15.6, headDmg: 95, bodyDmg: 38, hasADS: true, zoom: 1.25, color: 0x023e8a, modelLen: 0.9 }
     };
 
-    var currentWkey = '1';
+    var currentWkey = 'vandal';
     var curW = WEAPONS[currentWkey];
     var ammo = curW.mag;
     var score = 0;
+    var playing = false;
     var isADS = false;
     var lastShotTime = 0;
     var isReloading = false;
+    var shopOpen = false;
+
+    // Populate Shop UI
+    function buildShopUI() {
+      shopGrid.innerHTML = '';
+      var categories = ['Sidearm', 'SMG', 'Shotgun', 'Rifle', 'Sniper', 'Heavy'];
+
+      categories.forEach(function(cat) {
+        var title = document.createElement('div');
+        title.className = 'category-title';
+        title.innerText = cat + 's';
+        shopGrid.appendChild(title);
+
+        Object.keys(WEAPONS).forEach(function(key) {
+          var w = WEAPONS[key];
+          if (w.cat === cat) {
+            var card = document.createElement('div');
+            card.className = 'gun-card' + (key === currentWkey ? ' active' : '');
+            card.innerHTML = 
+              '<div class="gun-name">' + w.name + '</div>' +
+              '<div class="gun-stat">Head: <span>' + w.headDmg + '</span></div>' +
+              '<div class="gun-stat">Body: <span>' + w.bodyDmg + '</span></div>' +
+              '<div class="gun-stat">Mag: <span>' + w.mag + '</span></div>' +
+              '<div class="gun-stat">Fire Rate: <span>' + w.fireRate + '</span></div>';
+
+            card.addEventListener('click', function() {
+              equipWeapon(key);
+              toggleShop(false);
+              canvas.requestPointerLock();
+            });
+            shopGrid.appendChild(card);
+          }
+        });
+      });
+    }
+
+    function equipWeapon(key) {
+      currentWkey = key;
+      curW = WEAPONS[currentWkey];
+      ammo = curW.mag;
+      wNameEl.innerText = curW.name;
+      wNameEl.style.color = '#' + curW.color.toString(16);
+      ammoEl.innerText = ammo;
+      maxAmmoEl.innerText = curW.mag;
+      if (isADS) toggleADS(false);
+      buildGunMesh();
+      buildShopUI();
+    }
+
+    function toggleShop(state) {
+      shopOpen = (state !== undefined) ? state : !shopOpen;
+      shop.style.display = shopOpen ? 'flex' : 'none';
+      if (shopOpen && document.pointerLockElement === canvas) {
+        document.exitPointerLock();
+      }
+    }
+
+    buildShopUI();
 
     var scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0f1923);
-    scene.fog = new THREE.FogExp2(0x0f1923, 0.02);
+    scene.fog = new THREE.FogExp2(0x0f1923, 0.018);
 
-    var baseFov = 75;
-    var camera = new THREE.PerspectiveCamera(baseFov, 340 / 480, 0.1, 1000);
+    var baseFov = 70;
+    var camera = new THREE.PerspectiveCamera(baseFov, window.innerWidth / window.innerHeight, 0.1, 1000);
     var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
-    renderer.setSize(340, 480);
+    renderer.setSize(window.innerWidth, window.innerHeight);
 
-    var grid = new THREE.GridHelper(80, 32, 0xff4655, 0x223242);
+    window.addEventListener('resize', function() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    var grid = new THREE.GridHelper(100, 40, 0xff4655, 0x223242);
     grid.position.y = -1.5;
     scene.add(grid);
 
-    var wallGeo = new THREE.PlaneGeometry(60, 20);
+    var wallGeo = new THREE.PlaneGeometry(80, 25);
     var wallMat = new THREE.MeshBasicMaterial({ color: 0x172431, side: THREE.DoubleSide });
     var wall = new THREE.Mesh(wallGeo, wallMat);
-    wall.position.set(0, 8, -25);
+    wall.position.set(0, 10, -28);
     scene.add(wall);
-
-    var lineGeo = new THREE.BoxGeometry(40, 0.1, 0.2);
-    var lineMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
-    var line10m = new THREE.Mesh(lineGeo, lineMat); line10m.position.set(0, -1.45, -10); scene.add(line10m);
-    var line20m = new THREE.Mesh(lineGeo, lineMat); line20m.position.set(0, -1.45, -20); scene.add(line20m);
 
     var ambient = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambient);
 
     var gunGroup = new THREE.Group();
-    var gunMesh, barrelMesh;
+    var gunMesh;
     
     function buildGunMesh() {
       if (gunMesh) gunGroup.remove(gunMesh);
@@ -88,7 +215,7 @@
       var bodyMat = new THREE.MeshBasicMaterial({ color: curW.color, wireframe: true });
       var body = new THREE.Mesh(bodyGeo, bodyMat);
 
-      barrelMesh = new THREE.Mesh(
+      var barrelMesh = new THREE.Mesh(
         new THREE.CylinderGeometry(0.02, 0.02, 0.4),
         new THREE.MeshBasicMaterial({ color: 0xffffff })
       );
@@ -102,7 +229,7 @@
     }
     
     buildGunMesh();
-    gunGroup.position.set(0.3, -0.35, -0.6);
+    gunGroup.position.set(0.35, -0.32, -0.6);
     camera.add(gunGroup);
     scene.add(camera);
 
@@ -123,41 +250,76 @@
       head.userData = { type: 'head' };
       botGroup.add(head);
 
-      var x = (Math.random() - 0.5) * 16;
-      var z = -8 - Math.random() * 14;
+      var x = (Math.random() - 0.5) * 22;
+      var z = -8 - Math.random() * 16;
       botGroup.position.set(x, 0, z);
 
       scene.add(botGroup);
       targets.push({ group: botGroup, head: head, body: body, dir: Math.random() > 0.5 ? 1 : -1 });
     }
 
-    for (var i = 0; i < 5; i++) createBot();
+    for (var i = 0; i < 6; i++) createBot();
 
     var yaw = 0, pitch = 0;
+    
+    function lockChange() {
+      if (document.pointerLockElement === canvas) {
+        playing = true;
+        msg.style.display = 'none';
+        if (shopOpen) toggleShop(false);
+      } else {
+        playing = false;
+        if (!shopOpen) {
+          msg.style.display = 'flex';
+        }
+      }
+    }
+    document.addEventListener('pointerlockchange', lockChange);
 
-    // Direct Mouse Tracking (No Pointer Lock required)
-    window.addEventListener('mousemove', function(e) {
-      var rect = canvas.getBoundingClientRect();
-      var mx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      var my = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-      
-      var sens = isADS ? 0.4 : 0.8;
-      yaw = -mx * sens;
-      pitch = my * sens;
+    msg.addEventListener('click', function() { canvas.requestPointerLock(); });
+    canvas.addEventListener('click', function() { 
+      if (!playing && !shopOpen) canvas.requestPointerLock(); 
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (!playing || shopOpen) return;
+      var sens = isADS ? 0.0012 : 0.0022;
+      yaw -= e.movementX * sens;
+      pitch -= e.movementY * sens;
+      pitch = Math.max(-Math.PI / 2.5, Math.min(Math.PI / 2.5, pitch));
     });
 
     document.addEventListener('keydown', function(e) {
-      if (['1', '2', '3'].includes(e.key)) {
-        currentWkey = e.key;
-        curW = WEAPONS[currentWkey];
-        ammo = curW.mag;
-        wNameEl.innerText = curW.name;
-        wNameEl.style.color = '#' + curW.color.toString(16);
-        ammoEl.innerText = ammo;
-        maxAmmoEl.innerText = curW.mag;
-        if (isADS) toggleADS(false);
-        buildGunMesh();
+      // Toggle Shop with B
+      if (e.code === 'KeyB') {
+        toggleShop();
+        return;
       }
+
+      // Toggle Pointer Lock with K
+      if (e.code === 'KeyK') {
+        if (document.pointerLockElement === canvas) {
+          document.exitPointerLock();
+        } else {
+          canvas.requestPointerLock();
+        }
+        return;
+      }
+
+      // Close shop on ESC
+      if (e.code === 'Escape' && shopOpen) {
+        toggleShop(false);
+        return;
+      }
+
+      if (!playing || shopOpen) return;
+
+      // Quick numbers for quick weapons
+      if (e.key === '1') equipWeapon('vandal');
+      if (e.key === '2') equipWeapon('phantom');
+      if (e.key === '3') equipWeapon('sheriff');
+      if (e.key === '4') equipWeapon('operator');
+
       if (e.code === 'KeyR' && !isReloading && ammo < curW.mag) {
         isReloading = true;
         wNameEl.innerText = 'RELOADING...';
@@ -178,10 +340,9 @@
       camera.updateProjectionMatrix();
     }
 
-    window.addEventListener('mousedown', function(e) {
-      if (e.button === 2) {
-        toggleADS(!isADS);
-      }
+    document.addEventListener('mousedown', function(e) {
+      if (!playing || shopOpen) return;
+      if (e.button === 2) toggleADS(!isADS);
     });
 
     window.addEventListener('contextmenu', function(e) { e.preventDefault(); });
@@ -189,11 +350,11 @@
     var raycaster = new THREE.Raycaster();
     var isFiring = false;
 
-    window.addEventListener('mousedown', function(e) {
-      if (e.button === 0) isFiring = true;
+    document.addEventListener('mousedown', function(e) { 
+      if (e.button === 0 && playing && !shopOpen) isFiring = true; 
     });
-    window.addEventListener('mouseup', function(e) {
-      if (e.button === 0) isFiring = false;
+    document.addEventListener('mouseup', function(e) { 
+      if (e.button === 0) isFiring = false; 
     });
 
     function shoot() {
@@ -215,16 +376,13 @@
       raycaster.setFromCamera(new THREE.Vector2(rx, ry), camera);
 
       var clickableObjs = [];
-      targets.forEach(function(t) {
-        clickableObjs.push(t.head, t.body);
-      });
+      targets.forEach(function(t) { clickableObjs.push(t.head, t.body); });
 
       var hits = raycaster.intersectObjects(clickableObjs);
 
       if (hits.length > 0) {
         var hitObj = hits[0].object;
-        var hitType = hitObj.userData.type;
-        var isHead = hitType === 'head';
+        var isHead = hitObj.userData.type === 'head';
         var damage = isHead ? curW.headDmg : curW.bodyDmg;
 
         score += isHead ? 100 : 40;
@@ -250,26 +408,26 @@
       requestAnimationFrame(animate);
       var delta = clock.getDelta();
 
-      if (isFiring) shoot();
+      if (playing && !shopOpen) {
+        if (isFiring) shoot();
 
-      var targetX = isADS ? 0 : 0.3;
-      var targetY = isADS ? -0.15 : -0.35;
-      var targetZ = isADS ? -0.35 : -0.6;
+        var targetX = isADS ? 0 : 0.35;
+        var targetY = isADS ? -0.15 : -0.32;
+        var targetZ = isADS ? -0.35 : -0.6;
 
-      gunGroup.position.x += (targetX - gunGroup.position.x) * 0.2;
-      gunGroup.position.y += (targetY - gunGroup.position.y) * 0.2;
-      gunGroup.position.z += (targetZ - gunGroup.position.z) * 0.2;
+        gunGroup.position.x += (targetX - gunGroup.position.x) * 0.2;
+        gunGroup.position.y += (targetY - gunGroup.position.y) * 0.2;
+        gunGroup.position.z += (targetZ - gunGroup.position.z) * 0.2;
 
-      camera.rotation.order = 'YXZ';
-      camera.rotation.y = yaw;
-      camera.rotation.x = pitch;
+        camera.rotation.order = 'YXZ';
+        camera.rotation.y = yaw;
+        camera.rotation.x = pitch;
 
-      targets.forEach(function(t) {
-        t.group.position.x += t.dir * 2.5 * delta;
-        if (t.group.position.x > 8 || t.group.position.x < -8) {
-          t.dir *= -1;
-        }
-      });
+        targets.forEach(function(t) {
+          t.group.position.x += t.dir * 3.0 * delta;
+          if (t.group.position.x > 11 || t.group.position.x < -11) t.dir *= -1;
+        });
+      }
 
       renderer.render(scene, camera);
     }
@@ -277,5 +435,5 @@
     animate();
   })();
   </script>
-</body>" style="width:100%; max-width:340px; height:490px; border:0; display:block; margin:0 auto;"></iframe>
-</div>
+</body>
+</html>
