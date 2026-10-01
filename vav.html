@@ -13,14 +13,12 @@
     #crosshair::before { top: 5px; left: 0; width: 12px; height: 2px; }
     #crosshair::after { top: 0; left: 5px; width: 2px; height: 12px; }
     
-    /* Scope Overlay */
     #scopeOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 15; display: none; background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.95) 70%); border: 2px solid rgba(0, 240, 255, 0.4); }
     #scopeOverlay::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: rgba(0, 240, 255, 0.6); }
     #scopeOverlay::after { content: ''; position: absolute; top: 0; left: 50%; width: 1px; height: 100%; background: rgba(0, 240, 255, 0.6); }
 
     #msg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; color: #fff; font-size: 20px; font-weight: bold; cursor: pointer; background: rgba(15,25,35,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 30; }
 
-    /* Modern Redesigned Shop Overlay */
     #shopOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,25,35,0.95); backdrop-filter: blur(8px); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 20; color: #fff; padding: 20px; }
     #shopOverlay h2 { margin: 0 0 15px; color: #ff4655; font-size: 28px; text-transform: uppercase; letter-spacing: 2px; border-bottom: 2px solid #ff4655; padding-bottom: 5px; }
     .shop-container { display: flex; gap: 20px; flex-wrap: wrap; max-width: 1000px; justify-content: center; width: 100%; }
@@ -32,7 +30,7 @@
     .shop-item .name { font-weight: bold; font-size: 15px; color: #ece8e1; }
     .shop-item .details { font-size: 11px; color: #a0aab2; margin-top: 4px; }
   </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 </head>
 <body>
   <div id="hud">
@@ -58,40 +56,40 @@
     <div class="shop-container">
       <div class="shop-category">
         <h3>Sidearms</h3>
-        <div class="shop-item active" onclick="selectWeapon('classic')">
+        <div class="shop-item active" onclick="selectWeapon('classic', this)">
           <div class="name">Classic</div>
           <div class="details">Secondary | Alt Shotgun</div>
         </div>
-        <div class="shop-item" onclick="selectWeapon('ghost')">
+        <div class="shop-item" onclick="selectWeapon('ghost', this)">
           <div class="name">Ghost</div>
           <div class="details">Silenced | High Precision</div>
         </div>
       </div>
       <div class="shop-category">
         <h3>Shotguns</h3>
-        <div class="shop-item" onclick="selectWeapon('bucky')">
+        <div class="shop-item" onclick="selectWeapon('bucky', this)">
           <div class="name">Bucky</div>
           <div class="details">8 Pellets | Alt Airburst</div>
         </div>
-        <div class="shop-item" onclick="selectWeapon('judge')">
+        <div class="shop-item" onclick="selectWeapon('judge', this)">
           <div class="name">Judge</div>
           <div class="details">Auto Shotgun | 5 Mag</div>
         </div>
       </div>
       <div class="shop-category">
         <h3>Rifles</h3>
-        <div class="shop-item" onclick="selectWeapon('vandal')">
+        <div class="shop-item" onclick="selectWeapon('vandal', this)">
           <div class="name">Vandal</div>
           <div class="details">High Lethality | Rifle</div>
         </div>
-        <div class="shop-item" onclick="selectWeapon('warden')">
+        <div class="shop-item" onclick="selectWeapon('warden', this)">
           <div class="name">Warden</div>
           <div class="details">2x Scope | Precision Rifle</div>
         </div>
       </div>
       <div class="shop-category">
         <h3>Snipers</h3>
-        <div class="shop-item" onclick="selectWeapon('operator')">
+        <div class="shop-item" onclick="selectWeapon('operator', this)">
           <div class="name">Operator</div>
           <div class="details">High Zoom | One Shot</div>
         </div>
@@ -101,15 +99,14 @@
   </div>
 
   <script>
-    // --- Weapon Configurations ---
     const WEAPONS = {
-      classic: { name: "CLASSIC", maxAmmo: 12, damage: 26, isSecondary: true, fireRate: 250, spread: 0.012, recoil: 0.01 },
-      ghost:   { name: "GHOST",   maxAmmo: 15, damage: 30, isSecondary: true, fireRate: 200, spread: 0.006, recoil: 0.008 },
-      bucky:   { name: "BUCKY",   maxAmmo: 5,  damage: 20, isSecondary: false, fireRate: 900, spread: 0.045, recoil: 0.05, pellets: 8 },
-      judge:   { name: "JUDGE",   maxAmmo: 5,  damage: 17, isSecondary: false, fireRate: 280, spread: 0.055, recoil: 0.04, pellets: 7 },
-      vandal:  { name: "VANDAL",  maxAmmo: 25, damage: 40, isSecondary: false, fireRate: 100, spread: 0.008, recoil: 0.018 },
-      warden:  { name: "WARDEN",  maxAmmo: 18, damage: 50, isSecondary: false, fireRate: 150, spread: 0.004, recoil: 0.015, zoom: 2.0 },
-      operator:{ name: "OPERATOR",maxAmmo: 5,  damage: 150,isSecondary: false, fireRate: 1200,spread: 0.001, recoil: 0.08, zoomLevels: [2.5, 5.0] }
+      classic: { name: "CLASSIC", maxAmmo: 12, damage: 26, fireRate: 250, spread: 0.012, recoil: 0.01 },
+      ghost:   { name: "GHOST",   maxAmmo: 15, damage: 30, fireRate: 200, spread: 0.006, recoil: 0.008 },
+      bucky:   { name: "BUCKY",   maxAmmo: 5,  damage: 20, fireRate: 900, spread: 0.045, recoil: 0.05, pellets: 8 },
+      judge:   { name: "JUDGE",   maxAmmo: 5,  damage: 17, fireRate: 280, spread: 0.055, recoil: 0.04, pellets: 7 },
+      vandal:  { name: "VANDAL",  maxAmmo: 25, damage: 40, fireRate: 100, spread: 0.008, recoil: 0.018 },
+      warden:  { name: "WARDEN",  maxAmmo: 18, damage: 50, fireRate: 150, spread: 0.004, recoil: 0.015, zoom: 2.0 },
+      operator:{ name: "OPERATOR",maxAmmo: 5,  damage: 150,fireRate: 1200,spread: 0.001, recoil: 0.08, zoomLevels: [2.5, 5.0] }
     };
 
     let currentWeapon = WEAPONS.classic;
@@ -119,53 +116,42 @@
     let isScoped = false;
     let opZoomIdx = 0;
 
-    // --- Scene & Camera Setup ---
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a0f14);
-    
+    scene.background = new THREE.Color(0x0f1923);
+
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambientLight);
     const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
     dirLight.position.set(20, 40, 20);
     scene.add(dirLight);
 
-    // --- Range Floor & Environment ---
     const floorGeo = new THREE.PlaneGeometry(60, 100);
     const floorMat = new THREE.MeshStandardMaterial({ color: 0x1f242d, roughness: 0.8 });
     const floor = new THREE.Mesh(floorGeo, floorMat);
     floor.rotation.x = -Math.PI / 2;
     scene.add(floor);
 
-    // Target Dummy
     const targetGeo = new THREE.CylinderGeometry(0.5, 0.5, 2, 16);
     const targetMat = new THREE.MeshStandardMaterial({ color: 0xff4655 });
     const target = new THREE.Mesh(targetGeo, targetMat);
     target.position.set(0, 1, -15);
     scene.add(target);
 
-    // --- Gun Mesh Placeholder Container ---
-    const gunGroup = new THREE.Group();
-    const gunMat = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.8 });
-    const gunMesh = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.2, 0.6), gunMat);
+    const gunMesh = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.2, 0.6), new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.8 }));
     gunMesh.position.set(0.25, -0.25, -0.5);
-    gunGroup.add(gunMesh);
-    camera.add(gunGroup);
+    camera.add(gunMesh);
     scene.add(camera);
 
     camera.position.set(0, 1.6, 5);
 
-    // --- Movement & Control Variables ---
     let keys = {};
     let isLocked = false;
     let yaw = 0, pitch = 0;
-    
-    // Physics / Crouch / Jump vars
     let posY = 1.6;
     let velY = 0;
     const gravity = -20;
@@ -173,15 +159,10 @@
     let isGrounded = true;
     let isCrouching = false;
     let isWalking = false;
-
-    // Airburst Alt-bullets array for Bucky
     let airbursts = [];
 
-    // --- Controls Lock Listener ---
     const msgDiv = document.getElementById('msg');
-    msgDiv.addEventListener('click', () => {
-      document.body.requestPointerLock();
-    });
+    msgDiv.addEventListener('click', () => { document.body.requestPointerLock(); });
 
     document.addEventListener('pointerlockchange', () => {
       isLocked = document.pointerLockElement === document.body;
@@ -194,13 +175,11 @@
       yaw -= e.movementX * sensitivity;
       pitch -= e.movementY * sensitivity;
       pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
-      
       camera.rotation.order = 'YXZ';
       camera.rotation.y = yaw;
       camera.rotation.x = pitch;
     });
 
-    // Key input handlers
     document.addEventListener('keydown', (e) => {
       keys[e.code] = true;
       if (e.code === 'KeyB') toggleShop();
@@ -212,7 +191,6 @@
     });
     document.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
-    // --- Shooting Handlers ---
     document.addEventListener('mousedown', (e) => {
       if (!isLocked) return;
       if (e.button === 0) firePrimary();
@@ -227,30 +205,25 @@
       ammo--;
       updateHUD();
 
-      let spreadModifier = 1.0;
-      if (isCrouching) spreadModifier = 0.35;
-      else if (isWalking) spreadModifier = 0.65;
+      let spreadModifier = isCrouching ? 0.35 : (isWalking ? 0.65 : 1.0);
       if (!isGrounded) spreadModifier = 2.5;
 
       const currentSpread = currentWeapon.spread * spreadModifier;
 
       if (currentWeapon === WEAPONS.bucky || currentWeapon === WEAPONS.judge) {
-        const count = currentWeapon.pellets;
-        for (let i = 0; i < count; i++) {
+        for (let i = 0; i < currentWeapon.pellets; i++) {
           shootRay(currentSpread, currentWeapon.damage);
         }
       } else {
         shootRay(currentSpread, currentWeapon.damage);
       }
 
-      // Recoil effect
       pitch += currentWeapon.recoil * spreadModifier;
       camera.rotation.x = pitch;
     }
 
     function fireSecondary() {
       if (currentWeapon === WEAPONS.bucky) {
-        // Bucky Alt Fire - Airburst Slug
         const now = Date.now();
         if (now - lastShotTime < currentWeapon.fireRate || ammo <= 0) return;
         lastShotTime = now;
@@ -259,15 +232,8 @@
 
         const dir = new THREE.Vector3();
         camera.getWorldDirection(dir);
-        
-        airbursts.push({
-          position: camera.position.clone(),
-          direction: dir,
-          startPos: camera.position.clone(),
-          distanceTraveled: 0
-        });
+        airbursts.push({ position: camera.position.clone(), direction: dir, distanceTraveled: 0 });
       } else if (currentWeapon === WEAPONS.classic) {
-        // Classic Alt Fire - 3 Shot Burst Shotgun
         const now = Date.now();
         if (now - lastShotTime < currentWeapon.fireRate || ammo <= 0) return;
         lastShotTime = now;
@@ -278,10 +244,8 @@
           shootRay(0.035, currentWeapon.damage);
         }
       } else if (currentWeapon.zoom || currentWeapon.zoomLevels) {
-        // Toggle Scope
         isScoped = !isScoped;
         const scopeEl = document.getElementById('scopeOverlay');
-        
         if (isScoped) {
           if (currentWeapon === WEAPONS.operator) {
             opZoomIdx = (opZoomIdx + 1) % WEAPONS.operator.zoomLevels.length;
@@ -290,7 +254,7 @@
             camera.fov = 75 / currentWeapon.zoom;
           }
           scopeEl.style.display = 'block';
-          gunMesh.visible = false; // Fix Warden scope blocking view bug
+          gunMesh.visible = false;
         } else {
           camera.fov = 75;
           scopeEl.style.display = 'none';
@@ -336,7 +300,6 @@
       updateHUD();
     }
 
-    // --- Shop System ---
     function toggleShop() {
       const shop = document.getElementById('shopOverlay');
       if (shop.style.display === 'flex') {
@@ -347,7 +310,7 @@
       }
     }
 
-    function selectWeapon(key) {
+    function selectWeapon(key, el) {
       currentWeapon = WEAPONS[key];
       ammo = currentWeapon.maxAmmo;
       isScoped = false;
@@ -356,9 +319,8 @@
       document.getElementById('scopeOverlay').style.display = 'none';
       gunMesh.visible = true;
       
-      // Update UI active states
-      document.querySelectorAll('.shop-item').forEach(el => el.classList.remove('active'));
-      event.currentTarget.classList.add('active');
+      document.querySelectorAll('.shop-item').forEach(item => item.classList.remove('active'));
+      if (el) el.classList.add('active');
       
       updateHUD();
       toggleShop();
@@ -370,7 +332,12 @@
       document.getElementById('scoreText').innerText = score;
     }
 
-    // --- Game Loop & Physics ---
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
     let lastTime = performance.now();
     function animate() {
       requestAnimationFrame(animate);
@@ -378,7 +345,6 @@
       const delta = (now - lastTime) / 1000;
       lastTime = now;
 
-      // Handle Crouching & Walking
       isCrouching = keys['KeyC'] || false;
       isWalking = keys['ShiftLeft'] || keys['ShiftRight'] || false;
 
@@ -387,7 +353,6 @@
       else if (isWalking) stateStr = "WALKING (Med Accuracy)";
       document.getElementById('stateText').innerText = stateStr;
 
-      // Movement Calculations
       const speed = isCrouching ? 2.5 : (isWalking ? 4.0 : 8.0);
       const moveDir = new THREE.Vector3();
 
@@ -402,7 +367,6 @@
       camera.position.x += moveDir.x * speed * delta;
       camera.position.z += moveDir.z * speed * delta;
 
-      // Vertical Gravity & Jump Handling
       velY += gravity * delta;
       posY += velY * delta;
 
@@ -414,26 +378,23 @@
       }
       camera.position.y = posY;
 
-      // Bucky Alt-Fire Airburst Bullet Simulation
       for (let i = airbursts.length - 1; i >= 0; i--) {
         const ab = airbursts[i];
         const step = 25 * delta;
         ab.position.addScaledVector(ab.direction, step);
         ab.distanceTraveled += step;
 
-        // Check early hit before 7.5m
         const ray = new THREE.Raycaster(ab.position, ab.direction, 0, step);
         const hits = ray.intersectObjects([target]);
         
         if (hits.length > 0) {
-          showDamage(20); // Deal 20 damage if hit before 7.5m
+          showDamage(20);
           score += 20;
           respawnTarget();
           airbursts.splice(i, 1);
           continue;
         }
 
-        // Burst at 7.5 meters into 5 pellets
         if (ab.distanceTraveled >= 7.5) {
           for (let p = 0; p < 5; p++) {
             shootRay(0.02, currentWeapon.damage);
