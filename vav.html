@@ -39,7 +39,7 @@
     <div>WEAPON: <span id="wName" style="color:#ff4655;">VANDAL</span></div>
     <div>AMMO: <span id="ammo" style="color:#00f0ff;">25</span>/<span id="maxAmmo">25</span></div>
     <div>SCORE: <span id="score" style="color:#ffb703;">0</span></div>
-    <div style="font-size: 12px; color: #8b9bb4;">[WASD] Move | [Shift] Walk | [C] Crouch | [B] Shop | [K] Mouse | [R] Reload</div>
+    <div style="font-size: 12px; color: #8b9bb4;">[WASD] Move | [Shift] Walk | [C] Crouch | [1-3] Slots | [B] Shop | [R] Reload</div>
     <a href="https://github.com/theodor-d/proot/blob/main/vav.html" target="_blank" class="github-link">
       <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
       GitHub
@@ -60,6 +60,13 @@
     <div style="position:absolute; left:50%; top:0; width:1px; height:100%; background:rgba(0,240,255,0.2);"></div>
   </div>
 
+  <div id="scope" style="position:absolute;inset:0;z-index:9;opacity:0;pointer-events:none;background:radial-gradient(circle at 50% 50%,transparent 0,transparent 36vmin,#000 36.4vmin);">
+    <div style="position:absolute;left:50%;top:50%;width:72vmin;height:1px;margin-left:-36vmin;background:#000;box-shadow:0 0 2px #fff"></div>
+    <div style="position:absolute;left:50%;top:50%;height:72vmin;width:1px;margin-top:-36vmin;background:#000;box-shadow:0 0 2px #fff"></div>
+    <div style="position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px;border-radius:50%;background:#ff4655"></div>
+  </div>
+  <div id="slotsHud" style="position:absolute;right:14px;bottom:14px;z-index:10;color:#ece8e1;font-size:13px;font-weight:700;text-align:right;line-height:1.7;text-shadow:0 0 6px #000;pointer-events:none"></div>
+
   <div id="msg">
     <div>CLICK TO LOCK MOUSE & PLAY</div>
     <div style="font-size:14px; color:#8b9bb4; margin-top:8px;">[WASD] Move | [Shift] Walk | [C] Crouch | [B] Weapon Shop | [K] Lock/Unlock Mouse</div>
@@ -67,7 +74,7 @@
 
   <div id="shop">
     <h1>VALORANT ARSENAL</h1>
-    <p>Click a weapon to equip | Press [B] or [ESC] to close</p>
+    <p>Carry 1 primary + 2 sidearms | A sidearm replaces your current sidearm slot | [B] / [ESC] close</p>
     <div class="shop-grid" id="shopGrid"></div>
   </div>
   
@@ -100,6 +107,8 @@
       shorty:  W('SHORTY','Sidearm',2,3.3,1.75,12,6.3,0x666666,0.35,1,[[9,36,12,10],[15,24,8,6],[50,9,3,2]]),
       frenzy:  W('FRENZY','Sidearm',13,10,1.5,1,6.3,0x555555,0.4,1,[[20,78,26,22],[50,63,21,17]]),
       ghost:   W('GHOST','Sidearm',15,6.75,1.5,1,6.3,0x777777,0.45,1,[[30,105,30,25],[50,87,25,21]]),
+      // Bandit: 8 mag, 5.1/s, 1.5s reload. 0-10m = 152/39/33 and 112 head beyond 30m (metabot); the 10-30m band is interpolated
+      bandit:  W('BANDIT','Sidearm',8,5.1,1.5,1,6.3,0xd4a017,0.42,1,[[10,152,39,33],[30,132,33,28],[50,112,28,24]]),
       sheriff: W('SHERIFF','Sidearm',6,4,2.25,1,6.3,0xffb703,0.5,1,[[30,159,55,46],[50,145,50,42]]),
       stinger: W('STINGER','SMG',20,18,2.25,1,6.0,0x00b4d8,0.55,1.15,[[20,67,27,23],[50,62,25,21]]),
       spectre: W('SPECTRE','SMG',30,13.33,2.25,1,6.0,0x0077b6,0.6,1.15,[[20,78,26,22],[50,66,22,18]]),
@@ -107,6 +116,8 @@
       judge:   W('JUDGE','Shotgun',7,3.5,2.2,12,5.9,0x7209b7,0.7,1,[[10,34,17,14],[15,26,13,11],[50,20,10,9]]),
       bulldog: W('BULLDOG','Rifle',24,9.15,2.5,1,5.13,0x2a9d8f,0.7,1.25,[[50,116,35,30]]),
       guardian:W('GUARDIAN','Rifle',12,4.75,2.5,1,5.13,0xe9c46a,0.8,1.5,[[50,195,65,49]]),
+      // Warden (patch 13.06): 18 mag, 6.5/s, 200/50/42 at all ranges, 2x scope, ADS fire rate 92%
+      warden:  W('WARDEN','Rifle',18,6.5,2.5,1,5.13,0x9bd35a,0.8,2,[[50,200,50,42]],0.92),
       phantom: W('PHANTOM','Rifle',30,11,2.5,1,5.13,0x00f0ff,0.75,1.25,[[15,156,39,33],[30,140,35,30],[50,124,31,26]],0.9),
       vandal:  W('VANDAL','Rifle',25,9.75,2.5,1,5.4,0xff4655,0.8,1.25,[[50,160,40,34]],0.853),
       marshal: W('MARSHAL','Sniper',5,1.5,2.5,1,5.4,0xf4a261,0.85,2.5,[[50,202,101,85]]),
@@ -116,6 +127,17 @@
       odin:    W('ODIN','Heavy',100,12,5,1,4.8,0x023e8a,0.9,1.25,[[30,95,38,32],[50,77,31,26]])
     };
 
+    // first-shot spread in degrees [hip, ADS]. Vandal/Phantom/Warden are published values; the rest are category estimates
+    var FS = { Sidearm:[0.30,0.20], SMG:[0.25,0.13], Rifle:[0.22,0.12], Heavy:[0.25,0.13], Shotgun:[3.0,3.0], Sniper:[3.5,0.03] };
+    for (var wk in WEAPONS) WEAPONS[wk].fs = FS[WEAPONS[wk].cat];
+    WEAPONS.vandal.fs = [0.25, 0.157]; WEAPONS.phantom.fs = [0.2, 0.11]; WEAPONS.warden.fs = [0.15, 0.04];
+    WEAPONS.operator.zooms = [2.5, 5];   // Operator scope: 2.5x, then 5x
+
+    // Loadout: 1 primary + 2 sidearms
+    var loadout = [{ key: 'vandal', ammo: 25 }, { key: 'classic', ammo: 12 }, { key: 'ghost', ammo: 15 }];
+    var curSlot = 0, sideSlot = 1;
+    var zoomNow = 1, adsStage = -1;
+    var scopeEl = document.getElementById('scope'), crossEl = document.getElementById('crosshair'), slotsHud = document.getElementById('slotsHud');
     var currentWkey = 'vandal';
     var curW = WEAPONS[currentWkey];
     var ammo = curW.mag;
@@ -165,7 +187,7 @@
           var w = WEAPONS[key];
           if (w.cat === cat) {
             var card = document.createElement('div');
-            card.className = 'gun-card' + (key === currentWkey ? ' active' : '');
+            card.className = 'gun-card' + (loadout.some(function(l) { return l.key === key; }) ? ' active' : '');
             card.innerHTML = 
               '<div class="gun-name">' + w.name + '</div>' +
               '<div class="gun-stat">Head: <span>' + w.headDmg + '</span></div>' +
@@ -185,18 +207,35 @@
       });
     }
 
-    function equipWeapon(key) {
+    function renderSlots() {
+      var h = '';
+      loadout.forEach(function(sl, i) {
+        h += '<div style="opacity:' + (i === curSlot ? 1 : 0.45) + ';color:' + (i === curSlot ? '#00f0ff' : '#ece8e1') + '">' + (i + 1) + ' &nbsp;' + WEAPONS[sl.key].name + '</div>';
+      });
+      slotsHud.innerHTML = h;
+    }
+    function applySlot() {
       clearTimeout(reloadTimer); isReloading = false;
-      currentWkey = key;
-      curW = WEAPONS[currentWkey];
-      ammo = curW.mag;
+      var sl = loadout[curSlot];
+      currentWkey = sl.key; curW = WEAPONS[currentWkey]; ammo = sl.ammo;
       wNameEl.innerText = curW.name;
-      wNameEl.style.color = '#' + curW.color.toString(16);
-      ammoEl.innerText = ammo;
-      maxAmmoEl.innerText = curW.mag;
+      wNameEl.style.color = '#' + ('000000' + curW.color.toString(16)).slice(-6);
+      ammoEl.innerText = ammo; maxAmmoEl.innerText = curW.mag;
       if (isADS) toggleADS(false);
-      buildGunMesh();
-      buildShopUI();
+      buildGunMesh(); buildShopUI(); renderSlots();
+    }
+    function selectSlot(i) {
+      if (i === curSlot) return;
+      loadout[curSlot].ammo = ammo;
+      curSlot = i; if (i > 0) sideSlot = i;
+      applySlot();
+    }
+    function equipWeapon(key) {          // from the shop
+      loadout[curSlot].ammo = ammo;
+      var slot = WEAPONS[key].cat === 'Sidearm' ? (curSlot > 0 ? curSlot : sideSlot) : 0;
+      loadout[slot] = { key: key, ammo: WEAPONS[key].mag };
+      curSlot = slot; if (slot > 0) sideSlot = slot;
+      applySlot();
     }
 
     function toggleShop(state) {
@@ -207,7 +246,7 @@
       }
     }
 
-    buildShopUI();
+    buildShopUI(); renderSlots();
 
     var scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0f1923);
@@ -238,30 +277,41 @@
 
     var ambient = new THREE.AmbientLight(0xffffff, 0.9);
     scene.add(ambient);
+    var sunL = new THREE.DirectionalLight(0xffffff, 0.8); sunL.position.set(1, 2, 1); scene.add(sunL);
 
     var gunGroup = new THREE.Group();
     var gunMesh;
     
+    var gunMuzzle = new THREE.Object3D();
     function buildGunMesh() {
       if (gunMesh) gunGroup.remove(gunMesh);
-      var g = new THREE.Group();
-      var bodyGeo = new THREE.BoxGeometry(0.12, 0.18, curW.modelLen);
-      var bodyMat = new THREE.MeshBasicMaterial({ color: curW.color, wireframe: true });
-      var body = new THREE.Mesh(bodyGeo, bodyMat);
-
-      var barrelMesh = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.02, 0.02, 0.4),
-        new THREE.MeshBasicMaterial({ color: 0xffffff })
-      );
-      barrelMesh.rotation.x = Math.PI / 2;
-      barrelMesh.position.set(0, 0.04, -curW.modelLen / 2 - 0.2);
-
-      g.add(body);
-      g.add(barrelMesh);
+      var g = new THREE.Group(), L = curW.modelLen, cat = curW.cat, key = currentWkey;
+      var dark = new THREE.MeshLambertMaterial({ color: 0x23282f }), mid = new THREE.MeshLambertMaterial({ color: 0x4a525c });
+      var acc = new THREE.MeshLambertMaterial({ color: curW.color }), glass = new THREE.MeshBasicMaterial({ color: 0x5ad7ff, transparent: true, opacity: 0.35 });
+      function box(w, h, d, x, y, z, m, rx) { var o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m || dark); o.position.set(x, y, z); if (rx) o.rotation.x = rx; g.add(o); return o; }
+      function cyl(r, len, x, y, z, m) { var o = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 12), m || mid); o.rotation.x = Math.PI / 2; o.position.set(x, y, z); g.add(o); return o; }
+      var pistol = cat === 'Sidearm', bl = pistol ? L * 0.75 : L * 0.55, barrel = L - bl + (cat === 'Sniper' ? 0.25 : 0.1);
+      box(0.07, pistol ? 0.085 : 0.11, bl, 0, 0, -bl / 2);                                   // receiver / slide
+      box(0.074, 0.012, bl * 0.85, 0, pistol ? 0.047 : 0.06, -bl / 2, acc);                   // colour stripe
+      cyl(0.016, barrel, 0, 0.012, -bl - barrel / 2);                                         // barrel
+      box(0.05, 0.15, 0.06, 0, -0.115, -0.03, mid, 0.25);                                     // grip
+      box(0.04, 0.03, 0.05, 0, -0.05, -bl * 0.45, dark);                                      // trigger guard
+      if (!pistol) box(0.06, 0.11, 0.22, 0, -0.01, 0.12, mid);                                // stock
+      if (cat === 'Sniper') box(0.05, 0.06, 0.2, 0, 0.05, 0.14, mid);                         // cheek riser
+      if (cat === 'SMG' || cat === 'Rifle') box(0.05, 0.17, 0.07, 0, -0.14, -bl * 0.55, dark, 0.12);   // magazine
+      if (cat === 'Heavy') box(0.1, 0.2, 0.14, 0, -0.15, -bl * 0.5, dark);                    // box magazine
+      if (cat === 'Shotgun') { box(0.08, 0.06, 0.2, 0, -0.06, -bl - 0.12, mid); cyl(0.014, bl * 0.9, 0, -0.045, -bl - 0.05); }   // pump + tube
+      if (pistol) { box(0.012, 0.02, 0.012, 0, 0.06, -bl + 0.02); box(0.04, 0.02, 0.012, 0, 0.06, -0.03); }          // iron sights
+      else if (cat === 'Sniper') { cyl(0.03, 0.38, 0, 0.115, -bl * 0.45); cyl(0.04, 0.07, 0, 0.115, -bl * 0.45 - 0.2); cyl(0.036, 0.06, 0, 0.115, -bl * 0.45 + 0.2); cyl(0.032, 0.005, 0, 0.115, -bl * 0.45 - 0.236, glass); box(0.02, 0.06, 0.04, 0, 0.075, -bl * 0.45 - 0.1, dark); }
+      else if (key === 'warden') { cyl(0.028, 0.24, 0, 0.1, -bl * 0.4); cyl(0.034, 0.04, 0, 0.1, -bl * 0.4 - 0.13); box(0.02, 0.05, 0.04, 0, 0.07, -bl * 0.4, dark); }
+      else { box(0.012, 0.03, 0.012, 0, 0.085, -bl + 0.03); box(0.035, 0.025, 0.03, 0, 0.083, -0.02); }               // front / rear sight
+      gunMuzzle.position.set(0, 0.012, -(bl + barrel));
+      g.add(gunMuzzle);
+      g.position.z = L * 0.45;
       gunMesh = g;
       gunGroup.add(gunMesh);
     }
-    
+
     buildGunMesh();
     gunGroup.position.set(0.35, -0.32, -0.6);
     camera.add(gunGroup);
@@ -328,7 +378,7 @@
 
     document.addEventListener('mousemove', function(e) {
       if (!playing || shopOpen) return;
-      var sens = isADS ? 0.0012 : 0.0022;
+      var sens = 0.0022 / zoomNow;
       yaw -= e.movementX * sens;
       pitch -= e.movementY * sens;
       pitch = Math.max(-Math.PI / 2.5, Math.min(Math.PI / 2.5, pitch));
@@ -358,10 +408,9 @@
       if (playing && !shopOpen) { setKey(e.code, true); if (e.code.indexOf('Arrow') === 0) e.preventDefault(); }
       if (!playing || shopOpen) return;
 
-      if (e.key === '1') equipWeapon('vandal');
-      if (e.key === '2') equipWeapon('phantom');
-      if (e.key === '3') equipWeapon('sheriff');
-      if (e.key === '4') equipWeapon('operator');
+      if (e.key === '1') selectSlot(0);
+      if (e.key === '2') selectSlot(1);
+      if (e.key === '3') selectSlot(2);
 
       if (e.code === 'KeyR') startReload();
     });
@@ -372,15 +421,27 @@
 
     function toggleADS(state) {
       if (!curW.hasADS && state) return;
-      isADS = state;
-      adsOverlay.style.opacity = isADS ? '1' : '0';
-      camera.fov = isADS ? baseFov / curW.zoom : baseFov;
+      isADS = state; if (!state) adsStage = -1;
+      zoomNow = isADS ? (curW.zooms ? curW.zooms[Math.max(0, adsStage)] : curW.zoom) : 1;
+      var scoped = isADS && curW.cat === 'Sniper';
+      adsOverlay.style.opacity = (isADS && !scoped) ? '1' : '0';
+      scopeEl.style.opacity = scoped ? '1' : '0';
+      gunGroup.visible = !scoped;
+      crossEl.style.display = scoped ? 'none' : 'block';
+      camera.fov = baseFov / zoomNow;
       camera.updateProjectionMatrix();
+    }
+    function cycleADS() {               // Operator: 2.5x -> 5x -> off. Others: on/off
+      if (!curW.hasADS) return;
+      var n = curW.zooms ? curW.zooms.length : 1;
+      if (!isADS) { adsStage = 0; toggleADS(true); }
+      else if (adsStage + 1 < n) { adsStage++; toggleADS(true); }
+      else toggleADS(false);
     }
 
     document.addEventListener('mousedown', function(e) {
       if (!playing || shopOpen) return;
-      if (e.button === 2) toggleADS(!isADS);
+      if (e.button === 2) cycleADS();
     });
 
     window.addEventListener('contextmenu', function(e) { e.preventDefault(); });
@@ -400,7 +461,46 @@
         if (dist <= r[0] || i === w.ranges.length - 1) return part === 'head' ? r[1] : (part === 'leg' ? r[3] : r[2]);
       }
     }
-    var KICK = { Sniper: 0.04, Shotgun: 0.03, Rifle: 0.004, SMG: 0.003, Heavy: 0.004, Sidearm: 0.005 };
+    var D2R = Math.PI / 180;
+    // per category: [kick up deg/shot, sway deg, bloom deg/shot, bloom cap deg, running error deg]  (approximations of Valorant's feel)
+    var CAT = { Sidearm: [0.55, 0.10, 0.35, 1.2, 3.0], SMG: [0.22, 0.16, 0.07, 1.0, 3.5], Rifle: [0.30, 0.20, 0.08, 1.2, 4.0],
+                Heavy: [0.24, 0.20, 0.06, 1.2, 4.0], Shotgun: [2.2, 0.40, 0, 0, 0], Sniper: [3.5, 0.30, 0, 0, 9.0] };
+    var recoilP = 0, recoilY = 0, shotN = 0;
+
+    // invisible floor so tracers / bullet holes have something to land on (the back wall already exists)
+    var floorGeo = new THREE.PlaneGeometry(200, 200); floorGeo.rotateX(-Math.PI / 2);
+    var floorM = new THREE.Mesh(floorGeo, new THREE.MeshBasicMaterial({ visible: false })); scene.add(floorM);
+    var worldObjs = [floorM, wall];
+
+    var tracers = [], tHead = 0, decals = [], dHead = 0, i0;
+    var trGeo = new THREE.CylinderGeometry(0.012, 0.012, 1, 4); trGeo.rotateX(Math.PI / 2);
+    for (i0 = 0; i0 < 24; i0++) {
+      var tm = new THREE.Mesh(trGeo, new THREE.MeshBasicMaterial({ color: 0xfff1b0, transparent: true, opacity: 0.9, depthWrite: false, fog: false }));
+      tm.visible = false; scene.add(tm); tracers.push({ mesh: tm, life: 0 });
+    }
+    for (i0 = 0; i0 < 40; i0++) {
+      var dm = new THREE.Mesh(new THREE.CircleGeometry(0.07, 10), new THREE.MeshBasicMaterial({ color: 0x05080c, transparent: true, opacity: 0.85, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));
+      dm.visible = false; scene.add(dm); decals.push(dm);
+    }
+    function spawnTracer(from, to) {
+      var len = from.distanceTo(to); if (len < 0.3) return;
+      var t = tracers[tHead]; tHead = (tHead + 1) % tracers.length;
+      t.mesh.position.copy(from).add(to).multiplyScalar(0.5);
+      t.mesh.lookAt(to); t.mesh.scale.set(1, 1, len);
+      t.life = 0.09; t.mesh.material.opacity = 0.9; t.mesh.visible = true;
+    }
+    function spawnDecal(point, normal) {
+      var d = decals[dHead]; dHead = (dHead + 1) % decals.length;
+      d.position.copy(point).addScaledVector(normal, 0.01);
+      d.lookAt(point.clone().add(normal)); d.visible = true;
+    }
+    function updateTracers(dt) {
+      tracers.forEach(function(t) {
+        if (!t.mesh.visible) return;
+        t.life -= dt; t.mesh.material.opacity = Math.max(0, t.life / 0.09) * 0.9;
+        if (t.life <= 0) t.mesh.visible = false;
+      });
+    }
 
     function shoot() {
       var now = performance.now();
@@ -414,37 +514,68 @@
       ammoEl.innerText = ammo;
       gunGroup.position.z = isADS ? -0.3 : -0.4;
       gunGroup.position.y = isADS ? -0.12 : -0.28;
-      pitch = Math.min(Math.PI / 2.5, pitch + KICK[curW.cat] * (isADS ? 0.7 : 1));
 
-      // inaccuracy grows with speed; ADS / crouch / standing still tighten it
-      var spd = pvel.length();
-      var spread = (isADS ? 0.003 : 0.012) + (spd / 5.4) * (isADS ? 0.004 : 0.02);
-      if (moveKeys.crouch && spd < 0.5) spread *= 0.7;
-      if (curW.pellets > 1) spread = 0.05;
+      // spread cone (deg) = first-shot spread + bloom from consecutive shots + movement error
+      var c = CAT[curW.cat], fs = curW.fs;
+      var spd = Math.hypot(pvel.x, pvel.z), frac = Math.min(1, spd / curW.speed);
+      var base = isADS ? fs[1] : fs[0];
+      if (moveKeys.crouch && spd < 0.5) base *= 0.7;
+      var theta = (base + Math.min(c[3], shotN * c[2]) + Math.pow(frac, 2.5) * c[4]) * D2R;
 
-      var objs = [];
-      targets.forEach(function(t) { objs.push(t.head, t.body); });
+      camera.updateMatrixWorld(true);
+      var q = camera.quaternion;
+      var fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(q);
+      var rgt = new THREE.Vector3(1, 0, 0).applyQuaternion(q);
+      var upv = new THREE.Vector3(0, 1, 0).applyQuaternion(q);
+      var from = new THREE.Vector3();
+      if (curW.cat === 'Sniper' && isADS) from.copy(camera.position).addScaledVector(fwd, 0.6).addScaledVector(upv, -0.06);
+      else gunMuzzle.getWorldPosition(from);
+
+      var botObjs = [];
+      targets.forEach(function(t) { botObjs.push(t.head, t.body); });
+      var all = botObjs.concat(worldObjs);
+      raycaster.far = 60;
       var dealt = [], topPart = null, total = 0;
 
       for (var p = 0; p < curW.pellets; p++) {
-        raycaster.setFromCamera(new THREE.Vector2((Math.random() - 0.5) * spread, (Math.random() - 0.5) * spread), camera);
-        var hits = raycaster.intersectObjects(objs);
-        if (!hits.length) continue;
-        var h = hits[0], part = h.object.userData.type;
-        for (var i = 0; i < targets.length; i++) {
-          var t = targets[i];
-          if (t.head !== h.object && t.body !== h.object) continue;
-          if (part === 'body' && h.point.y - t.group.position.y < -0.2) part = 'leg';   // lowest ~third of the body
-          var d = dmgAt(curW, h.distance, part);
-          t.hp -= d; total += d;
-          if (part === 'head' || !topPart || (part === 'body' && topPart === 'leg')) topPart = part;
-          if (dealt.indexOf(t) < 0) dealt.push(t);
-          t.hpBar.scale.x = Math.max(0, t.hp / t.maxHp);
-          t.hpBar.material.color.setHex(t.hp / t.maxHp < 0.35 ? 0xff4655 : 0x00f0ff);
-          t.lastPart = part;
-          break;
+        var ang = Math.random() * Math.PI * 2, r = Math.sqrt(Math.random()) * theta;
+        var dir = fwd.clone().addScaledVector(rgt, Math.cos(ang) * r).addScaledVector(upv, Math.sin(ang) * r).normalize();
+        raycaster.set(camera.position, dir);
+        var hits = raycaster.intersectObjects(all);
+        var end = camera.position.clone().addScaledVector(dir, 60);
+        if (hits.length) {
+          var h = hits[0]; end = h.point.clone();
+          var part = h.object.userData.type;
+          if (!part) {                                   // wall / floor: bullet hole
+            var nrm = h.face.normal.clone().transformDirection(h.object.matrixWorld);
+            if (nrm.dot(dir) > 0) nrm.negate();
+            spawnDecal(h.point, nrm);
+          } else {
+            for (var i = 0; i < targets.length; i++) {
+              var t = targets[i];
+              if (t.head !== h.object && t.body !== h.object) continue;
+              if (part === 'body' && h.point.y - t.group.position.y < -0.2) part = 'leg';
+              var d = dmgAt(curW, h.distance, part);
+              t.hp -= d; total += d;
+              if (part === 'head' || !topPart || (part === 'body' && topPart === 'leg')) topPart = part;
+              if (dealt.indexOf(t) < 0) dealt.push(t);
+              t.hpBar.scale.x = Math.max(0, t.hp / t.maxHp);
+              t.hpBar.material.color.setHex(t.hp / t.maxHp < 0.35 ? 0xff4655 : 0x00f0ff);
+              t.lastPart = part;
+              break;
+            }
+          }
         }
+        if (p < 4) spawnTracer(from, end);
       }
+
+      // recoil: first bullet of a burst is clean (except big-kick weapons), then the crosshair climbs and sways
+      if (c[0] >= 1 || shotN > 0) {
+        var vk = c[0] * (shotN < 8 ? 1 : 0.6) * (isADS ? 0.85 : 1);
+        var hz = (Math.sin(shotN * 0.55) + 0.5 * Math.sin(shotN * 1.3)) * c[1];
+        recoilP += vk * D2R; recoilY += hz * D2R;
+      }
+      shotN++;
 
       if (total > 0) {
         var label = topPart === 'head' ? 'HEADSHOT ' : (topPart === 'leg' ? 'LEG HIT ' : 'BODY HIT ');
@@ -495,16 +626,20 @@
         camera.position.y = eyeY;
 
         var targetX = isADS ? 0 : 0.35;
-        var targetY = isADS ? -0.15 : -0.32;
+        var targetY = isADS ? -0.115 : -0.32;
         var targetZ = isADS ? -0.35 : -0.6;
 
         gunGroup.position.x += (targetX - gunGroup.position.x) * 0.2;
         gunGroup.position.y += (targetY - gunGroup.position.y) * 0.2;
         gunGroup.position.z += (targetZ - gunGroup.position.z) * 0.2;
 
+        var tNow = performance.now();
+        if (tNow - lastShotTime > 120) { var rk = Math.exp(-7 * delta); recoilP *= rk; recoilY *= rk; }   // crosshair settles back
+        if (tNow - lastShotTime > 350) shotN = 0;                                                      // spray pattern resets
+        updateTracers(delta);
         camera.rotation.order = 'YXZ';
-        camera.rotation.y = yaw;
-        camera.rotation.x = pitch;
+        camera.rotation.y = yaw + recoilY;
+        camera.rotation.x = pitch + recoilP;
 
         // Bot movement & health bar billboard rotation
         targets.forEach(function(t) {
