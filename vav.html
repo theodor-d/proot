@@ -6,12 +6,17 @@
   <title>Valorant Aim Trainer</title>
   <style>
     body { margin: 0; background: #0f1923; text-align: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; user-select: none; }
-    #hud { position: absolute; top: 16px; left: 0; width: 100%; color: #ece8e1; font-size: 15px; font-weight: 700; pointer-events: none; z-index: 10; display: flex; justify-content: space-around; text-shadow: 0 0 6px #000; }
+    #hud { position: absolute; top: 16px; left: 0; width: 100%; color: #ece8e1; font-size: 15px; font-weight: 700; pointer-events: none; z-index: 10; display: flex; justify-content: space-around; align-items: center; text-shadow: 0 0 6px #000; padding: 0 10px; box-sizing: border-box; }
     #dmgText { position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); color: #00f0ff; font-weight: bold; font-size: 24px; pointer-events: none; z-index: 12; opacity: 0; transition: opacity 0.2s; }
     #crosshair { position: absolute; top: 50%; left: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; pointer-events: none; z-index: 11; }
     #adsOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 2px solid rgba(0,240,255,0.4); box-sizing: border-box; pointer-events: none; z-index: 9; opacity: 0; transition: opacity 0.15s; }
     #msg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; color: #fff; font-size: 20px; font-weight: bold; cursor: pointer; background: rgba(15,25,35,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; }
     canvas { width: 100vw; height: 100vh; display: block; }
+
+    /* GitHub Link Styling */
+    .github-link { pointer-events: auto; display: flex; align-items: center; gap: 6px; background: rgba(23, 36, 49, 0.8); border: 1px solid #ff4655; color: #ece8e1; text-decoration: none; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; transition: all 0.2s ease; }
+    .github-link:hover { background: #ff4655; color: #fff; transform: translateY(-1px); box-shadow: 0 0 8px rgba(255, 70, 85, 0.5); }
+    .github-link svg { fill: currentColor; width: 14px; height: 14px; }
 
     /* Gun Shop Modal */
     #shop { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 25, 35, 0.95); z-index: 30; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; color: #ece8e1; }
@@ -32,7 +37,15 @@
     <div>WEAPON: <span id="wName" style="color:#ff4655;">VANDAL</span></div>
     <div>AMMO: <span id="ammo" style="color:#00f0ff;">25</span>/<span id="maxAmmo">25</span></div>
     <div>SCORE: <span id="score" style="color:#ffb703;">0</span></div>
-    <div style="font-size: 12px; color: #8b9bb4;">[B] Shop | [K] Lock/Unlock Mouse | [R] Reload</div>
+    <div style="font-size: 12px; color: #8b9bb4;">[B] Shop | [K] Lock Mouse | [R] Reload</div>
+    
+    <!-- GitHub Link -->
+    <a href="https://github.com/theodor-d/proot/blob/main/vav.html" target="_blank" class="github-link" title="View Source on GitHub">
+      <svg viewBox="0 0 16 16">
+        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+      </svg>
+      GitHub
+    </a>
   </div>
 
   <div id="dmgText">HEADSHOT 160</div>
@@ -77,35 +90,28 @@
     var dmgText = document.getElementById('dmgText');
     var adsOverlay = document.getElementById('adsOverlay');
 
-    // Complete Valorant Weapon Roster
     var WEAPONS = {
-      // Sidearms
       'classic': { name: 'CLASSIC', cat: 'Sidearm', mag: 12, fireRate: 6.75, headDmg: 78, bodyDmg: 26, hasADS: false, zoom: 1.0, color: 0x888888, modelLen: 0.4 },
       'shorty':  { name: 'SHORTY', cat: 'Sidearm', mag: 2, fireRate: 3.3, headDmg: 22, bodyDmg: 11, hasADS: false, zoom: 1.0, color: 0x666666, modelLen: 0.35 },
       'frenzy':  { name: 'FRENZY', cat: 'Sidearm', mag: 13, fireRate: 10.0, headDmg: 78, bodyDmg: 26, hasADS: false, zoom: 1.0, color: 0x555555, modelLen: 0.4 },
       'ghost':   { name: 'GHOST', cat: 'Sidearm', mag: 15, fireRate: 6.75, headDmg: 105, bodyDmg: 30, hasADS: false, zoom: 1.0, color: 0x777777, modelLen: 0.45 },
       'sheriff': { name: 'SHERIFF', cat: 'Sidearm', mag: 6, fireRate: 4.0, headDmg: 159, bodyDmg: 55, hasADS: false, zoom: 1.0, color: 0xffb703, modelLen: 0.5 },
 
-      // SMGs
       'stinger': { name: 'STINGER', cat: 'SMG', mag: 20, fireRate: 16.0, headDmg: 67, bodyDmg: 27, hasADS: true, zoom: 1.15, color: 0x00b4d8, modelLen: 0.55 },
       'spectre': { name: 'SPECTRE', cat: 'SMG', mag: 30, fireRate: 13.3, headDmg: 78, bodyDmg: 26, hasADS: true, zoom: 1.15, color: 0x0077b6, modelLen: 0.6 },
 
-      // Shotguns
       'bucky':   { name: 'BUCKY', cat: 'Shotgun', mag: 5, fireRate: 1.1, headDmg: 44, bodyDmg: 22, hasADS: false, zoom: 1.0, color: 0x9d4edd, modelLen: 0.7 },
       'judge':   { name: 'JUDGE', cat: 'Shotgun', mag: 7, fireRate: 3.5, headDmg: 34, bodyDmg: 17, hasADS: false, zoom: 1.0, color: 0x7209b7, modelLen: 0.7 },
 
-      // Rifles
       'bulldog': { name: 'BULLDOG', cat: 'Rifle', mag: 24, fireRate: 10.0, headDmg: 115, bodyDmg: 35, hasADS: true, zoom: 1.25, color: 0x2a9d8f, modelLen: 0.7 },
       'guardian':{ name: 'GUARDIAN', cat: 'Rifle', mag: 12, fireRate: 5.25, headDmg: 195, bodyDmg: 65, hasADS: true, zoom: 1.5, color: 0xe9c46a, modelLen: 0.8 },
       'phantom': { name: 'PHANTOM', cat: 'Rifle', mag: 30, fireRate: 11.0, headDmg: 156, bodyDmg: 39, hasADS: true, zoom: 1.25, color: 0x00f0ff, modelLen: 0.75 },
       'vandal':  { name: 'VANDAL', cat: 'Rifle', mag: 25, fireRate: 9.75, headDmg: 160, bodyDmg: 40, hasADS: true, zoom: 1.25, color: 0xff4655, modelLen: 0.8 },
 
-      // Sniper
       'marshal': { name: 'MARSHAL', cat: 'Sniper', mag: 5, fireRate: 1.5, headDmg: 202, bodyDmg: 101, hasADS: true, zoom: 2.5, color: 0xf4a261, modelLen: 0.85 },
       'outlaw':  { name: 'OUTLAW', cat: 'Sniper', mag: 2, fireRate: 2.75, headDmg: 238, bodyDmg: 140, hasADS: true, zoom: 2.5, color: 0xe76f51, modelLen: 0.85 },
       'operator':{ name: 'OPERATOR', cat: 'Sniper', mag: 5, fireRate: 0.6, headDmg: 255, bodyDmg: 150, hasADS: true, zoom: 2.5, color: 0xd62828, modelLen: 0.9 },
 
-      // Heavy
       'ares':    { name: 'ARES', cat: 'Heavy', mag: 50, fireRate: 13.0, headDmg: 72, bodyDmg: 30, hasADS: true, zoom: 1.25, color: 0x48cae4, modelLen: 0.85 },
       'odin':    { name: 'ODIN', cat: 'Heavy', mag: 100, fireRate: 15.6, headDmg: 95, bodyDmg: 38, hasADS: true, zoom: 1.25, color: 0x023e8a, modelLen: 0.9 }
     };
@@ -120,7 +126,6 @@
     var isReloading = false;
     var shopOpen = false;
 
-    // Populate Shop UI
     function buildShopUI() {
       shopGrid.innerHTML = '';
       var categories = ['Sidearm', 'SMG', 'Shotgun', 'Rifle', 'Sniper', 'Heavy'];
@@ -290,13 +295,11 @@
     });
 
     document.addEventListener('keydown', function(e) {
-      // Toggle Shop with B
       if (e.code === 'KeyB') {
         toggleShop();
         return;
       }
 
-      // Toggle Pointer Lock with K
       if (e.code === 'KeyK') {
         if (document.pointerLockElement === canvas) {
           document.exitPointerLock();
@@ -306,7 +309,6 @@
         return;
       }
 
-      // Close shop on ESC
       if (e.code === 'Escape' && shopOpen) {
         toggleShop(false);
         return;
@@ -314,7 +316,6 @@
 
       if (!playing || shopOpen) return;
 
-      // Quick numbers for quick weapons
       if (e.key === '1') equipWeapon('vandal');
       if (e.key === '2') equipWeapon('phantom');
       if (e.key === '3') equipWeapon('sheriff');
