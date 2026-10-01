@@ -39,7 +39,7 @@
     <div>WEAPON: <span id="wName" style="color:#ff4655;">VANDAL</span></div>
     <div>AMMO: <span id="ammo" style="color:#00f0ff;">25</span>/<span id="maxAmmo">25</span></div>
     <div>SCORE: <span id="score" style="color:#ffb703;">0</span></div>
-    <div style="font-size: 12px; color: #8b9bb4;">[WASD] Move | [B] Shop | [K] Lock Mouse | [R] Reload</div>
+    <div style="font-size: 12px; color: #8b9bb4;">[WASD] Move | [Shift] Walk | [C] Crouch | [B] Shop | [K] Mouse | [R] Reload</div>
     <a href="https://github.com/theodor-d/proot/blob/main/vav.html" target="_blank" class="github-link">
       <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
       GitHub
@@ -62,7 +62,7 @@
 
   <div id="msg">
     <div>CLICK TO LOCK MOUSE & PLAY</div>
-    <div style="font-size:14px; color:#8b9bb4; margin-top:8px;">[WASD] Move | [B] Weapon Shop | [K] Lock/Unlock Mouse</div>
+    <div style="font-size:14px; color:#8b9bb4; margin-top:8px;">[WASD] Move | [Shift] Walk | [C] Crouch | [B] Weapon Shop | [K] Lock/Unlock Mouse</div>
   </div>
 
   <div id="shop">
@@ -87,25 +87,33 @@
     var dmgText = document.getElementById('dmgText');
     var adsOverlay = document.getElementById('adsOverlay');
 
+    // ranges = [[max distance (m), head, body, leg], ...]  |  rate = rounds/sec  |  rel = reload sec
+    // speed = run speed m/s (Vandal 5.4 / Operator 5.13 from Liquipedia; the others are approximate)
+    function W(name, cat, mag, rate, rel, pel, speed, color, len, zoom, ranges, adsMul) {
+      var r = ranges[0];
+      return { name: name, cat: cat, mag: mag, fireRate: rate, reload: rel, pellets: pel, speed: speed,
+               color: color, modelLen: len, hasADS: zoom > 1, zoom: zoom, ranges: ranges, adsMul: adsMul || 1,
+               headDmg: r[1], bodyDmg: r[2], legDmg: r[3] };
+    }
     var WEAPONS = {
-      'classic': { name: 'CLASSIC', cat: 'Sidearm', mag: 12, fireRate: 6.75, headDmg: 78, bodyDmg: 26, hasADS: false, zoom: 1.0, color: 0x888888, modelLen: 0.4 },
-      'shorty':  { name: 'SHORTY', cat: 'Sidearm', mag: 2, fireRate: 3.3, headDmg: 22, bodyDmg: 11, hasADS: false, zoom: 1.0, color: 0x666666, modelLen: 0.35 },
-      'frenzy':  { name: 'FRENZY', cat: 'Sidearm', mag: 13, fireRate: 10.0, headDmg: 78, bodyDmg: 26, hasADS: false, zoom: 1.0, color: 0x555555, modelLen: 0.4 },
-      'ghost':   { name: 'GHOST', cat: 'Sidearm', mag: 15, fireRate: 6.75, headDmg: 105, bodyDmg: 30, hasADS: false, zoom: 1.0, color: 0x777777, modelLen: 0.45 },
-      'sheriff': { name: 'SHERIFF', cat: 'Sidearm', mag: 6, fireRate: 4.0, headDmg: 159, bodyDmg: 55, hasADS: false, zoom: 1.0, color: 0xffb703, modelLen: 0.5 },
-      'stinger': { name: 'STINGER', cat: 'SMG', mag: 20, fireRate: 16.0, headDmg: 67, bodyDmg: 27, hasADS: true, zoom: 1.15, color: 0x00b4d8, modelLen: 0.55 },
-      'spectre': { name: 'SPECTRE', cat: 'SMG', mag: 30, fireRate: 13.3, headDmg: 78, bodyDmg: 26, hasADS: true, zoom: 1.15, color: 0x0077b6, modelLen: 0.6 },
-      'bucky':   { name: 'BUCKY', cat: 'Shotgun', mag: 5, fireRate: 1.1, headDmg: 44, bodyDmg: 22, hasADS: false, zoom: 1.0, color: 0x9d4edd, modelLen: 0.7 },
-      'judge':   { name: 'JUDGE', cat: 'Shotgun', mag: 7, fireRate: 3.5, headDmg: 34, bodyDmg: 17, hasADS: false, zoom: 1.0, color: 0x7209b7, modelLen: 0.7 },
-      'bulldog': { name: 'BULLDOG', cat: 'Rifle', mag: 24, fireRate: 10.0, headDmg: 115, bodyDmg: 35, hasADS: true, zoom: 1.25, color: 0x2a9d8f, modelLen: 0.7 },
-      'guardian':{ name: 'GUARDIAN', cat: 'Rifle', mag: 12, fireRate: 5.25, headDmg: 195, bodyDmg: 65, hasADS: true, zoom: 1.5, color: 0xe9c46a, modelLen: 0.8 },
-      'phantom': { name: 'PHANTOM', cat: 'Rifle', mag: 30, fireRate: 11.0, headDmg: 156, bodyDmg: 39, hasADS: true, zoom: 1.25, color: 0x00f0ff, modelLen: 0.75 },
-      'vandal':  { name: 'VANDAL', cat: 'Rifle', mag: 25, fireRate: 9.75, headDmg: 160, bodyDmg: 40, hasADS: true, zoom: 1.25, color: 0xff4655, modelLen: 0.8 },
-      'marshal': { name: 'MARSHAL', cat: 'Sniper', mag: 5, fireRate: 1.5, headDmg: 202, bodyDmg: 101, hasADS: true, zoom: 2.5, color: 0xf4a261, modelLen: 0.85 },
-      'outlaw':  { name: 'OUTLAW', cat: 'Sniper', mag: 2, fireRate: 2.75, headDmg: 238, bodyDmg: 140, hasADS: true, zoom: 2.5, color: 0xe76f51, modelLen: 0.85 },
-      'operator':{ name: 'OPERATOR', cat: 'Sniper', mag: 5, fireRate: 0.6, headDmg: 255, bodyDmg: 150, hasADS: true, zoom: 2.5, color: 0xd62828, modelLen: 0.9 },
-      'ares':    { name: 'ARES', cat: 'Heavy', mag: 50, fireRate: 13.0, headDmg: 72, bodyDmg: 30, hasADS: true, zoom: 1.25, color: 0x48cae4, modelLen: 0.85 },
-      'odin':    { name: 'ODIN', cat: 'Heavy', mag: 100, fireRate: 15.6, headDmg: 95, bodyDmg: 38, hasADS: true, zoom: 1.25, color: 0x023e8a, modelLen: 0.9 }
+      classic: W('CLASSIC','Sidearm',12,6.75,1.75,1,6.3,0x888888,0.4,1,[[30,78,26,22],[50,66,22,18]]),
+      shorty:  W('SHORTY','Sidearm',2,3.3,1.75,12,6.3,0x666666,0.35,1,[[9,36,12,10],[15,24,8,6],[50,9,3,2]]),
+      frenzy:  W('FRENZY','Sidearm',13,10,1.5,1,6.3,0x555555,0.4,1,[[20,78,26,22],[50,63,21,17]]),
+      ghost:   W('GHOST','Sidearm',15,6.75,1.5,1,6.3,0x777777,0.45,1,[[30,105,30,25],[50,87,25,21]]),
+      sheriff: W('SHERIFF','Sidearm',6,4,2.25,1,6.3,0xffb703,0.5,1,[[30,159,55,46],[50,145,50,42]]),
+      stinger: W('STINGER','SMG',20,18,2.25,1,6.0,0x00b4d8,0.55,1.15,[[20,67,27,23],[50,62,25,21]]),
+      spectre: W('SPECTRE','SMG',30,13.33,2.25,1,6.0,0x0077b6,0.6,1.15,[[20,78,26,22],[50,66,22,18]]),
+      bucky:   W('BUCKY','Shotgun',5,1.1,2.5,15,5.9,0x9d4edd,0.7,1,[[8,44,22,19],[12,34,17,14],[50,18,9,8]]),
+      judge:   W('JUDGE','Shotgun',7,3.5,2.2,12,5.9,0x7209b7,0.7,1,[[10,34,17,14],[15,26,13,11],[50,20,10,9]]),
+      bulldog: W('BULLDOG','Rifle',24,9.15,2.5,1,5.13,0x2a9d8f,0.7,1.25,[[50,116,35,30]]),
+      guardian:W('GUARDIAN','Rifle',12,4.75,2.5,1,5.13,0xe9c46a,0.8,1.5,[[50,195,65,49]]),
+      phantom: W('PHANTOM','Rifle',30,11,2.5,1,5.13,0x00f0ff,0.75,1.25,[[15,156,39,33],[30,140,35,30],[50,124,31,26]],0.9),
+      vandal:  W('VANDAL','Rifle',25,9.75,2.5,1,5.4,0xff4655,0.8,1.25,[[50,160,40,34]],0.853),
+      marshal: W('MARSHAL','Sniper',5,1.5,2.5,1,5.4,0xf4a261,0.85,2.5,[[50,202,101,85]]),
+      outlaw:  W('OUTLAW','Sniper',2,2.75,2.4,1,5.4,0xe76f51,0.85,2.5,[[50,238,140,119]]),
+      operator:W('OPERATOR','Sniper',5,0.6,3.7,1,5.13,0xd62828,0.9,2.5,[[50,255,150,120]]),
+      ares:    W('ARES','Heavy',50,13,3.25,1,5.0,0x48cae4,0.85,1.25,[[30,72,30,25],[50,67,28,23]]),
+      odin:    W('ODIN','Heavy',100,12,5,1,4.8,0x023e8a,0.9,1.25,[[30,95,38,32],[50,77,31,26]])
     };
 
     var currentWkey = 'vandal';
@@ -119,7 +127,29 @@
     var shopOpen = false;
 
     // Movement controls state
-    var moveKeys = { forward: false, backward: false, left: false, right: false };
+    var moveKeys = { forward: false, backward: false, left: false, right: false, walk: false, crouch: false };
+    function setKey(code, v) {
+      if (code === 'KeyW' || code === 'ArrowUp') moveKeys.forward = v;
+      if (code === 'KeyS' || code === 'ArrowDown') moveKeys.backward = v;
+      if (code === 'KeyA' || code === 'ArrowLeft') moveKeys.left = v;
+      if (code === 'KeyD' || code === 'ArrowRight') moveKeys.right = v;
+      if (code === 'ShiftLeft' || code === 'ShiftRight') moveKeys.walk = v;
+      if (code === 'KeyC') moveKeys.crouch = v;
+    }
+    function releaseKeys() { for (var k in moveKeys) moveKeys[k] = false; }
+    window.addEventListener('blur', releaseKeys);
+
+    var reloadTimer = null;
+    function startReload() {
+      if (isReloading || ammo >= curW.mag) return;
+      isReloading = true;
+      wNameEl.innerText = 'RELOADING...';
+      if (isADS) toggleADS(false);
+      reloadTimer = setTimeout(function() {
+        ammo = curW.mag; ammoEl.innerText = ammo;
+        wNameEl.innerText = curW.name; isReloading = false;
+      }, curW.reload * 1000);
+    }
 
     function buildShopUI() {
       shopGrid.innerHTML = '';
@@ -141,7 +171,8 @@
               '<div class="gun-stat">Head: <span>' + w.headDmg + '</span></div>' +
               '<div class="gun-stat">Body: <span>' + w.bodyDmg + '</span></div>' +
               '<div class="gun-stat">Mag: <span>' + w.mag + '</span></div>' +
-              '<div class="gun-stat">Fire Rate: <span>' + w.fireRate + '</span></div>';
+              '<div class="gun-stat">Leg: <span>' + w.legDmg + '</span>' + (w.pellets > 1 ? ' &times;' + w.pellets + ' pellets' : '') + '</div>' +
+              '<div class="gun-stat">Fire Rate: <span>' + w.fireRate + '</span> | Reload: <span>' + w.reload + 's</span></div>';
 
             card.addEventListener('click', function() {
               equipWeapon(key);
@@ -155,6 +186,7 @@
     }
 
     function equipWeapon(key) {
+      clearTimeout(reloadTimer); isReloading = false;
       currentWkey = key;
       curW = WEAPONS[currentWkey];
       ammo = curW.mag;
@@ -183,7 +215,7 @@
 
     var baseFov = 70;
     var camera = new THREE.PerspectiveCamera(baseFov, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 0, 5); // Default player spawn
+    camera.position.set(0, 1.6, 5); // Default player spawn (eye height 1.6 m)
 
     var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -195,7 +227,7 @@
     });
 
     var grid = new THREE.GridHelper(100, 40, 0xff4655, 0x223242);
-    grid.position.y = -1.5;
+    grid.position.y = 0;
     scene.add(grid);
 
     var wallGeo = new THREE.PlaneGeometry(80, 25);
@@ -235,57 +267,40 @@
     camera.add(gunGroup);
     scene.add(camera);
 
-    // Bot Creation with 150 HP System
+    var BOT_HP = 150;
     var targets = [];
     function createBot() {
       var botGroup = new THREE.Group();
-
-      var bodyGeo = new THREE.CylinderGeometry(0.4, 0.3, 1.4, 8);
-      var bodyMat = new THREE.MeshBasicMaterial({ color: 0x2b3e50 });
-      var body = new THREE.Mesh(bodyGeo, bodyMat);
+      var body = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.3, 1.4, 8), new THREE.MeshBasicMaterial({ color: 0x2b3e50 }));
       body.userData = { type: 'body' };
       botGroup.add(body);
-
-      var headGeo = new THREE.SphereGeometry(0.3, 12, 12);
-      var headMat = new THREE.MeshBasicMaterial({ color: 0xff4655 });
-      var head = new THREE.Mesh(headGeo, headMat);
+      var head = new THREE.Mesh(new THREE.SphereGeometry(0.3, 12, 12), new THREE.MeshBasicMaterial({ color: 0xff4655 }));
       head.position.y = 1.0;
       head.userData = { type: 'head' };
       botGroup.add(head);
 
-      // Health Bar Mesh
-      var hpBgGeo = new THREE.PlaneGeometry(1.0, 0.12);
-      var hpBgMat = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.DoubleSide });
-      var hpBg = new THREE.Mesh(hpBgGeo, hpBgMat);
-      hpBg.position.set(0, 1.6, 0);
+      // HP bar: pivot turns to face the player; the fill is anchored on the left so it drains left
+      var pivot = new THREE.Group();
+      pivot.position.set(0, 1.6, 0);
+      pivot.add(new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.12), new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.DoubleSide })));
+      var barGeo = new THREE.PlaneGeometry(0.96, 0.08);
+      barGeo.translate(0.48, 0, 0);
+      var hpBar = new THREE.Mesh(barGeo, new THREE.MeshBasicMaterial({ color: 0x00f0ff, side: THREE.DoubleSide }));
+      hpBar.position.set(-0.48, 0, 0.01);
+      pivot.add(hpBar);
+      botGroup.add(pivot);
 
-      var hpBarGeo = new THREE.PlaneGeometry(0.96, 0.08);
-      var hpBarMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, side: THREE.DoubleSide });
-      var hpBar = new THREE.Mesh(hpBarGeo, hpBarMat);
-      hpBar.position.set(0, 1.6, 0.01);
-
-      botGroup.add(hpBg);
-      botGroup.add(hpBar);
-
-      var x = (Math.random() - 0.5) * 22;
-      var z = -8 - Math.random() * 14;
-      botGroup.position.set(x, 0, z);
-
+      botGroup.position.set((Math.random() - 0.5) * 22, 0.7, -8 - Math.random() * 14);
       scene.add(botGroup);
-      targets.push({ 
-        group: botGroup, 
-        head: head, 
-        body: body, 
-        hpBar: hpBar,
-        hp: 150, 
-        maxHp: 150,
-        dir: Math.random() > 0.5 ? 1 : -1 
-      });
+      targets.push({ group: botGroup, head: head, body: body, hpBar: hpBar, pivot: pivot,
+                     hp: BOT_HP, maxHp: BOT_HP, dir: Math.random() > 0.5 ? 1 : -1 });
     }
 
     for (var i = 0; i < 6; i++) createBot();
 
-    var yaw = 0, pitch = 0;
+    var yaw = 0, pitch = 0, isFiring = false;
+    var EYE_STAND = 1.6, EYE_CROUCH = 1.1, eyeY = EYE_STAND;
+    var pvel = new THREE.Vector3(), PLAYER_R = 0.45;
     
     function lockChange() {
       if (document.pointerLockElement === canvas) {
@@ -293,7 +308,7 @@
         msg.style.display = 'none';
         if (shopOpen) toggleShop(false);
       } else {
-        playing = false;
+        playing = false; releaseKeys(); isFiring = false;
         if (!shopOpen) {
           msg.style.display = 'flex';
         }
@@ -340,35 +355,19 @@
         return;
       }
 
+      if (playing && !shopOpen) { setKey(e.code, true); if (e.code.indexOf('Arrow') === 0) e.preventDefault(); }
       if (!playing || shopOpen) return;
-
-      if (e.code === 'KeyW' || e.code === 'ArrowUp') moveKeys.forward = true;
-      if (e.code === 'KeyS' || e.code === 'ArrowDown') moveKeys.backward = true;
-      if (e.code === 'KeyA' || e.code === 'ArrowLeft') moveKeys.left = true;
-      if (e.code === 'KeyD' || e.code === 'ArrowRight') moveKeys.right = true;
 
       if (e.key === '1') equipWeapon('vandal');
       if (e.key === '2') equipWeapon('phantom');
       if (e.key === '3') equipWeapon('sheriff');
       if (e.key === '4') equipWeapon('operator');
 
-      if (e.code === 'KeyR' && !isReloading && ammo < curW.mag) {
-        isReloading = true;
-        wNameEl.innerText = 'RELOADING...';
-        setTimeout(function() {
-          ammo = curW.mag;
-          ammoEl.innerText = ammo;
-          wNameEl.innerText = curW.name;
-          isReloading = false;
-        }, 1200);
-      }
+      if (e.code === 'KeyR') startReload();
     });
 
     window.addEventListener('keyup', function(e) {
-      if (e.code === 'KeyW' || e.code === 'ArrowUp') moveKeys.forward = false;
-      if (e.code === 'KeyS' || e.code === 'ArrowDown') moveKeys.backward = false;
-      if (e.code === 'KeyA' || e.code === 'ArrowLeft') moveKeys.left = false;
-      if (e.code === 'KeyD' || e.code === 'ArrowRight') moveKeys.right = false;
+      setKey(e.code, false);
     });
 
     function toggleADS(state) {
@@ -387,7 +386,6 @@
     window.addEventListener('contextmenu', function(e) { e.preventDefault(); });
 
     var raycaster = new THREE.Raycaster();
-    var isFiring = false;
 
     document.addEventListener('mousedown', function(e) { 
       if (e.button === 0 && playing && !shopOpen) isFiring = true; 
@@ -396,59 +394,73 @@
       if (e.button === 0) isFiring = false; 
     });
 
+    function dmgAt(w, dist, part) {
+      for (var i = 0; i < w.ranges.length; i++) {
+        var r = w.ranges[i];
+        if (dist <= r[0] || i === w.ranges.length - 1) return part === 'head' ? r[1] : (part === 'leg' ? r[3] : r[2]);
+      }
+    }
+    var KICK = { Sniper: 0.04, Shotgun: 0.03, Rifle: 0.004, SMG: 0.003, Heavy: 0.004, Sidearm: 0.005 };
+
     function shoot() {
       var now = performance.now();
-      if (now - lastShotTime < (1000 / curW.fireRate)) return;
-      if (ammo <= 0 || isReloading) return;
+      var rate = curW.fireRate * (isADS ? curW.adsMul : 1);
+      if (now - lastShotTime < (1000 / rate)) return;
+      if (isReloading) return;
+      if (ammo <= 0) { startReload(); return; }
 
       lastShotTime = now;
       ammo--;
       ammoEl.innerText = ammo;
-
       gunGroup.position.z = isADS ? -0.3 : -0.4;
       gunGroup.position.y = isADS ? -0.12 : -0.28;
+      pitch = Math.min(Math.PI / 2.5, pitch + KICK[curW.cat] * (isADS ? 0.7 : 1));
 
-      var spread = isADS ? 0.003 : 0.012;
-      var rx = (Math.random() - 0.5) * spread;
-      var ry = (Math.random() - 0.5) * spread;
+      // inaccuracy grows with speed; ADS / crouch / standing still tighten it
+      var spd = pvel.length();
+      var spread = (isADS ? 0.003 : 0.012) + (spd / 5.4) * (isADS ? 0.004 : 0.02);
+      if (moveKeys.crouch && spd < 0.5) spread *= 0.7;
+      if (curW.pellets > 1) spread = 0.05;
 
-      raycaster.setFromCamera(new THREE.Vector2(rx, ry), camera);
+      var objs = [];
+      targets.forEach(function(t) { objs.push(t.head, t.body); });
+      var dealt = [], topPart = null, total = 0;
 
-      var clickableObjs = [];
-      targets.forEach(function(t) { clickableObjs.push(t.head, t.body); });
-
-      var hits = raycaster.intersectObjects(clickableObjs);
-
-      if (hits.length > 0) {
-        var hitObj = hits[0].object;
-        var isHead = hitObj.userData.type === 'head';
-        var damage = isHead ? curW.headDmg : curW.bodyDmg;
-
-        dmgText.innerText = (isHead ? 'HEADSHOT ' : 'BODY HIT ') + damage;
-        dmgText.style.color = isHead ? '#ff4655' : '#00f0ff';
-        dmgText.style.opacity = '1';
-        setTimeout(function() { dmgText.style.opacity = '0'; }, 400);
-
+      for (var p = 0; p < curW.pellets; p++) {
+        raycaster.setFromCamera(new THREE.Vector2((Math.random() - 0.5) * spread, (Math.random() - 0.5) * spread), camera);
+        var hits = raycaster.intersectObjects(objs);
+        if (!hits.length) continue;
+        var h = hits[0], part = h.object.userData.type;
         for (var i = 0; i < targets.length; i++) {
           var t = targets[i];
-          if (t.head === hitObj || t.body === hitObj) {
-            t.hp -= damage;
-            
-            // Update 150 HP Bar length
-            var pct = Math.max(0, t.hp / t.maxHp);
-            t.hpBar.scale.x = pct;
-
-            if (t.hp <= 0) {
-              score += isHead ? 100 : 40;
-              scoreEl.innerText = score;
-              scene.remove(t.group);
-              targets.splice(i, 1);
-              createBot();
-            }
-            break;
-          }
+          if (t.head !== h.object && t.body !== h.object) continue;
+          if (part === 'body' && h.point.y - t.group.position.y < -0.2) part = 'leg';   // lowest ~third of the body
+          var d = dmgAt(curW, h.distance, part);
+          t.hp -= d; total += d;
+          if (part === 'head' || !topPart || (part === 'body' && topPart === 'leg')) topPart = part;
+          if (dealt.indexOf(t) < 0) dealt.push(t);
+          t.hpBar.scale.x = Math.max(0, t.hp / t.maxHp);
+          t.hpBar.material.color.setHex(t.hp / t.maxHp < 0.35 ? 0xff4655 : 0x00f0ff);
+          t.lastPart = part;
+          break;
         }
       }
+
+      if (total > 0) {
+        var label = topPart === 'head' ? 'HEADSHOT ' : (topPart === 'leg' ? 'LEG HIT ' : 'BODY HIT ');
+        dmgText.innerText = label + Math.round(total);
+        dmgText.style.color = topPart === 'head' ? '#ff4655' : '#00f0ff';
+        dmgText.style.opacity = '1';
+        setTimeout(function() { dmgText.style.opacity = '0'; }, 400);
+      }
+      dealt.forEach(function(t) {
+        if (t.hp > 0) return;
+        score += t.lastPart === 'head' ? 100 : 40;
+        scoreEl.innerText = score;
+        scene.remove(t.group);
+        targets.splice(targets.indexOf(t), 1);
+        createBot();
+      });
     }
 
     var clock = new THREE.Clock();
@@ -459,24 +471,28 @@
       if (playing && !shopOpen) {
         if (isFiring) shoot();
 
-        // Player WASD Movement Logic
-        var moveSpeed = 8.0 * delta;
-        var moveVector = new THREE.Vector3();
+        // Player movement (units = metres)
+        var want = new THREE.Vector3(
+          (moveKeys.right ? 1 : 0) - (moveKeys.left ? 1 : 0), 0,
+          (moveKeys.backward ? 1 : 0) - (moveKeys.forward ? 1 : 0));
+        if (want.lengthSq() > 0) want.normalize();
+        var top = curW.speed * (moveKeys.walk ? 0.57 : 1) * (moveKeys.crouch ? 0.5 : 1);
+        want.multiplyScalar(top).applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+        pvel.lerp(want, 1 - Math.exp(-14 * delta));
+        camera.position.x += pvel.x * delta;
+        camera.position.z += pvel.z * delta;
 
-        if (moveKeys.forward) moveVector.z -= 1;
-        if (moveKeys.backward) moveVector.z += 1;
-        if (moveKeys.left) moveVector.x -= 1;
-        if (moveKeys.right) moveVector.x += 1;
+        // bots are solid
+        targets.forEach(function(t) {
+          var dx = camera.position.x - t.group.position.x, dz = camera.position.z - t.group.position.z;
+          var d = Math.hypot(dx, dz), min = PLAYER_R + 0.4;
+          if (d < min && d > 0.001) { camera.position.x += dx / d * (min - d); camera.position.z += dz / d * (min - d); }
+        });
 
-        moveVector.normalize();
-        moveVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
-
-        camera.position.addScaledVector(moveVector, moveSpeed);
-
-        // Player Arena Boundaries
-        camera.position.x = Math.max(-15, Math.min(15, camera.position.x));
-        camera.position.z = Math.max(-2, Math.min(12, camera.position.z));
-        camera.position.y = 0; // Lock vertical feet level
+        camera.position.x = Math.max(-26, Math.min(26, camera.position.x));
+        camera.position.z = Math.max(-25, Math.min(25, camera.position.z));
+        eyeY += ((moveKeys.crouch ? EYE_CROUCH : EYE_STAND) - eyeY) * Math.min(1, delta * 12);
+        camera.position.y = eyeY;
 
         var targetX = isADS ? 0 : 0.35;
         var targetY = isADS ? -0.15 : -0.32;
@@ -494,7 +510,7 @@
         targets.forEach(function(t) {
           t.group.position.x += t.dir * 3.0 * delta;
           if (t.group.position.x > 11 || t.group.position.x < -11) t.dir *= -1;
-          t.hpBar.rotation.y = yaw;
+          t.pivot.rotation.y = yaw;
         });
       }
 
